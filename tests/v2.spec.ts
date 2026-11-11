@@ -196,6 +196,11 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
   ).toBeVisible();
   await page.getByRole("button", { name: "إغلاق", exact: true }).click();
   await expect(page.locator(".book-item")).toHaveCount(2, { timeout: 90000 });
+  await page
+    .getByRole("button", { name: "ذاكرة الماء", exact: true })
+    .first()
+    .click();
+  await expect(editor).toContainText("البحر الخافت");
   await page.getByRole("button", { name: "أنشئ حسابًا لحفظها سحابيًا" }).click();
   await page.getByRole("button", { name: "إنشاء حساب", exact: true }).click();
   const email = "midad.v2.browser." + Date.now() + "@gmail.com",

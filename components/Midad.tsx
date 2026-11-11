@@ -482,6 +482,7 @@ export default function Midad() {
                   setProject(null);
                   setScene(null);
                   setProjects([]);
+                  setView("library");
                 }
               })
             }
