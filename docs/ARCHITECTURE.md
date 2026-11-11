@@ -6,3 +6,8 @@ components/Auth للمصادقة؛ Midad ينسق المكتبة والكتاب�
 الحفظ: نسخة JSON محلية بمفتاح user+scene، debounce 850ms، طابور متسلسل، retry كل 8s وعند online، compare-and-swap ذري في Postgres. رفض version_conflict يبقي النسخة المحلية مع خيار تنزيل وإعادة فتح السحابية. لا دمج تلقائي. النسخ تُنشأ لكل حفظ؛ سياسة احتفاظ لم تُنفذ بعد. الحفظ المحلي synchronous وقد يحتاج IndexedDB للمخطوطات الكبيرة.
 
 استيراد DOCX كنص عبر mammoth لا HTML. تصدير DOCX وEPUB RTL، النص والتقسيم محفوظان؛ تنسيق marks الداخلي لا ينتقل بعد. المصدر الأصلي Electron+C# لا يصلح نقله مباشرًا للخادم؛ التنفيذ مستقل.
+
+## الإصدار الثاني
+طبقة البيانات تختار بين Supabase وIndexedDB وفق actor صريح. الضيف ليس جلسة Supabase مزيفة. lib/guest stores صفوفًا منفصلة وفهرس table ومعاملات atomic للحفظ والإصدارات؛ lib/portable ينشئ نسخًا قابلة للنقل ويتحقق من الروابط ويعيد المعرفات عند الاستعادة. نقل الضيف إلى الحساب idempotent مع حفظ المصدر المحلي.
+Auth ينشئ الحساب عبر Edge Function محددة للمنتج تستخدم admin.createUser(email_confirm:true) ثم دخول Supabase العادي. لا مفاتيح privileged في العميل ولا تغيير لإعداد Auth المشترك. المكونات الجديدة منفصلة: Plan، Relationships، Sprint، Annotations، ManuscriptManager، ProjectSettings، BackupManager، Assets وProjectSearch.
+المسودات تربط chapters بـdraft_id؛ null تعني الأصل. نسخ المسودة يعيد معرّفات المشاهد والحواشي ويحافظ على النص الأصلي. assets في bucket خاصة مع روابط موقعة لعشر دقائق.

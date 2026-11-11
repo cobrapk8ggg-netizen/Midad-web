@@ -1,42 +1,38 @@
-# حالة الوظائف
+# حالة الوظائف — الإصدار الثاني
 
-الحالة العامة: **Partially implemented**. المنتج لا يحقق بعد جميع شروط القبول الواردة في الطلب. لا وضع Demo ولا بيانات مستخدمين مزيفة؛ أغلفة العناوين مولدة بصريًا من المشاريع الحقيقية.
+حالات التنفيذ تعني النطاق المحدد أدناه، لا تكافؤًا كاملًا مع Novalist. ما زالت بعض شروط المنتج الأصلي غير مكتملة.
 
 |الميزة|الحالة|النطاق والدليل|
 |---|---|---|
-|تسجيل الدخول والخروج|Implemented and tested|حسابا QA حقيقيان، Playwright وREST|
-|إنشاء الحساب وتأكيد البريد|Blocked|واجهة signUp حقيقية؛ حد البريد منع إكمال تأكيد حساب جديد|
-|استعادة كلمة المرور|Implemented but unverified|واجهات resetPasswordForEmail/updateUser؛ تسليم الرسالة وredirect يحتاجان تحققًا|
-|جلسة SDK وتجديدها|Partially implemented|استمرار جلسة مختبر؛ انتهاء وتجديد طويل الأمد لم يُختبرا|
-|مشاريع وكتب وفصول ومشاهد|Partially implemented|إنشاء وتبديل واسترجاع مختبر؛ بعض عمليات تعديل/حذف الكتب والفصول غير متاحة|
-|مكتبة RTL والبحث بالعنوان|Implemented and tested|لقطات Desktop وiPad والهاتف|
-|محرر Tiptap عربي ونص طويل|Implemented and tested|23940 حرفًا و4680 كلمة تقريبًا، خروج/دخول واستعادة|
-|تنسيق النص والبحث والاستبدال|Implemented but unverified|الأوامر موصولة بـProseMirror؛ يلزم توسيع الاختبار للتحديد واللصق والتراجع|
-|الحفظ التلقائي ونسخ سابقة|Implemented and tested|RPC يزيد الإصدار ويحفظ السابقة؛ REST رفض stale version|
-|Offline والاستعادة المحلية|Implemented and tested|انقطاع شبكة وإعادة تحميل واستعادة اختُبرت؛ لا مزامنة Offline كاملة|
-|تعارض جلستين|Implemented and tested|اختبار تبويبين رفض التعديل المتأخر وحافظ على الأحدث؛ لا دمج فقري|
-|معاينة واستعادة النسخ|Implemented and tested|استعادة فعلية في المتصفح تحفظ الحالية؛ مقارنة جنبًا لجنب وليست diff ملونة|
-|التركيز|Implemented and tested|المحرر نفسه يبقى مركبًا؛ screenshot محفوظ|
-|إعداد الخط والحجم والعرض|Partially implemented|تفاعلي داخل الجلسة؛ لا مزامنة تفضيلات أو تحكم line-height بعد|
-|ترتيب المشاهد|Partially implemented|سحب خطوة وأزرار تقديم/تأخير؛ لا نقل بين الفصول ولا transaction جماعي|
-|الشخصيات والأماكن|Partially implemented|CRUD حقول أساسية؛ إنشاء شخصية مختبر؛ الحقول المفصلة والوسائط والظهور بالمشاهد ناقصة|
-|ملاحظات المشروع|Partially implemented|إنشاء وتحرير مختبران؛ الحذف موصول ولم يُختبر بالمتصفح|
-|لوحة الأحداث والخط الزمني|Partially implemented|إنشاء وحالة وتاريخ؛ لا arcs/dependencies/scene links كاملة|
-|World Bible عبر كتب المشروع|Partially implemented|الكيانات على project scope؛ لا overrides لكل كتاب|
-|العلاقات المرئية|Not implemented|لا رسم شكلي|
-|TXT/Markdown/DOCX/EPUB export|Partially implemented|الملفات قرئت مجددًا بالاختبار؛ نص وعناوين RTL، marks لا تُصدّر بعد؛ لا EPUBCheck أو Word بصري|
-|TXT/MD/DOCX import|Partially implemented|معاينة نص وإضافة كمشهد؛ لا تقسيم فصول آلي ولا حفظ التنسيق الأصلي|
-|PDF وEPUB import|Not implemented|لا زر يوهم بالتوفر|
-|لوحة الأوامر|Partially implemented|تنقل وأوامر مع Ctrl/⌘ K؛ لا بحث كامل بالمخطوطة|
-|RLS وStorage policies|Implemented and tested|32 تحققًا في rls-results.json|
-|Storage UI|Not implemented|bucket والسياسات موجودة؛ رفع الأغلفة والصور غير موجود|
-|أهداف وإحصاء الكلمات|Partially implemented|عداد وهدف افتراضي فقط؛ لا إعداد هدف أو تقارير يومية|
-|Sprint والإحصاءات والجلسات|Not implemented|لم يُنشأ رسم زخرفي|
-|المسودات المتعددة والسلاسل|Not implemented|كتب متعددة موجودة، إدارة drafts/series غير موجودة|
-|تعليقات وحواشي ومراجعات اقتراحية|Not implemented|تحتاج schema وmarks مستقلة|
-|نسخ احتياطية وإدارة البيانات|Not implemented|صادرات نصية فقط ليست backup شاملًا|
-|PWA|Partially implemented|manifest وأيقونة؛ لا service worker أو Offline كامل|
-|الوصول الشامل وiPad فعلي|Partially implemented|RTL وfocus وnative dialog وتقليل حركة؛ لا ضمان AA أو اختبار A10 فيزيائي|
-|النشر|Implemented and tested|Vercel HTTPS؛ دخول وحفظ واسترجاع على الرابط الحقيقي؛ SMTP ما زال عائقًا|
+|التسجيل بلا تأكيد بريد|Implemented and tested|midad-signup يؤكد المستخدم على الخادم ثم دخول عادي؛ لا رسالة تأكيد مطلوبة|
+|الدخول والخروج|Implemented and tested|حسابات جديدة حقيقية، وليست fixtures أضيفت يدويًا إلى Auth|
+|الضيف|Implemented and tested|IndexedDB، روايات/كتب/فصول/مشاهد، حفظ ونسخ محلية، إعادة فتح، نقل إلى الحساب|
+|نقل الضيف إلى حساب|Implemented and tested|UUIDs ثابتة وروابط محفوظة؛ إعادة دخول واسترجاع النص والحاشية؛ الأصل المحلي يبقى|
+|الواجهة الزجاجية الجديدة|Implemented and tested|Login/Library/Editor، SVG أصلي وتكوين فضي، لقطات Desktop/iPad/Phone؛ الحكم الجمالي النهائي للمستخدم|
+|مشاريع وكتب وفصول ومشاهد|Partially implemented|إنشاء، تعديل أسماء، حذف كتاب/فصل/مشهد، ترتيب فصول ومشاهد؛ بعض CRUD لم تختبر منفردة|
+|المسودات المستقلة|Implemented and tested|نسخ نصوص وannotations أو بداية فارغة، تبديل، حذف نسخة مع حماية الأصل؛ لا diff بين المسودات بعد|
+|محرر عربي طويل|Implemented and tested|Tiptap، نص عربي مختلط، RTL، autosave، استعادة بعد دخول|
+|تعارض النسخ السحابية|Implemented and tested|CAS ذري، رفض stale version، snapshot قبل كل تعديل؛ UI يحفظ النسخة المحلية|
+|نسخ المشاهد واستعادتها|Implemented and tested|معاينة جنبًا لجنب، حماية الحالية؛ لا diff ملون|
+|التركيز|Implemented and tested|نفس مثيل المحرر، Esc واختصار، تباعد/عرض/حجم مستقل|
+|إعدادات المحرر|Implemented and tested|حجم وخط وعرض وتباعد؛ حفظ محلي تلقائي وسحابي عند طلب الحفظ؛ تحقق بسياق متصفح جديد|
+|الشخصيات والأماكن|Partially implemented|اسم/ألقاب/عمر/وصف/خلفية/أهداف/انتماءات، CRUD وصورة خاصة؛ custom fields وظهور المشاهد ناقصان|
+|العلاقات المرئية|Implemented and tested|إنشاء وتعديل علاقة، SVG حقيقي، قائمة تحرير وحذف؛ إنشاء/تحرير مختبران، حذف العلاقة يحتاج اختبار متصفح منفصل|
+|التعليقات والحواشي|Partially implemented|mark ID مرتبط بالتحديد، نص الملاحظة، قفز/تحرير/حذف؛ إنشاء ونقل للحساب مختبران؛ التصدير يجمعها نهاية الفصل ولا ينتج native Word comments|
+|الأقواس والأحداث|Partially implemented|هدف/صراع/نتيجة، حالة وتاريخ، ربط قوس ومشهد، انتقال للمشهد؛ dependencies والتقويم الخيالي غير منفذين|
+|الخط الزمني|Partially implemented|ترتيب بالأحداث وتواريخ قابلة للتحرير؛ لا zoom أو مسارات متوازية أو تواريخ نسبية|
+|البحث بالمشروع|Implemented and tested|النصوص والشخصيات والملاحظات والأحداث، تطبيع التشكيل والألف، انتقال للمشهد؛ بحث عميل غير مفهرس SQL|
+|Writing Sprint|Implemented and tested|توقيت محفوظ على الجهاز، delta كلمات الكتاب ونتيجة محفوظة بالحساب/الضيف، إنهاء يدوي؛ لا تقرير يومي مفصل|
+|الصور الخاصة|Implemented and tested|Storage private + روابط موقعة، رفع/عرض/حذف غلاف، UI للشخصيات؛ صورة الشخصية نفسها لم تختبر منفردة|
+|TXT/MD/DOCX/EPUB export|Partially implemented|نص/عناوين/RTL وعريض ومائل وتسطير أساسي، حواشي نهاية الفصل؛ اختبارات XML وZIP؛ لا EPUBCheck أو Word بصري أو full fidelity|
+|TXT/MD/DOCX import|Partially implemented|معاينة نص وإضافة لمشهد؛ DOCX كنص فقط، لا تقسيم فصول أو الحفاظ على كل تنسيق|
+|نسخ احتياطية JSON|Implemented and tested|نصوص وكيانات وتخطيط ونسخ وعلاقات، معاينة ثم استيراد بمعرّفات جديدة؛ تستثني الصور والملفات|
+|RLS وStorage|Implemented and tested|فحوص REST بحسابين عبر المفتاح العام؛ النتائج في v2-rls-results.json|
+|استعادة كلمة المرور|Implemented but unverified|Supabase email recovery؛ ما زال يحتاج SMTP/redirect verification؛ لا خلط بينها وبين تأكيد التسجيل الذي أزيل من مسار مِداد|
+|أداء Safari/iPad A10|Implemented but unverified|اختبار مقاسات فقط عبر Chromium؛ الجهاز الفيزيائي غير متاح|
+|PDF، EPUB import، plugins|Not implemented|لا أزرار توهم بتوفرها|
+|Series مخصصة، multiple timelines، custom entities كاملة|Not implemented|مشروع متعدد الكتب وWorld Bible مشتركة موجودان؛ واجهات سلسلة متخصصة غير موجودة|
+|PWA Offline كامل|Partially implemented|manifest فقط؛ guest database محلية لكن تشغيل shell بلا شبكة بعد إغلاقه ليس مضمونًا|
+|إتاحة WCAG AA شاملة|Partially implemented|RTL، native dialogs، focus، reduced motion، إصلاحات overlays؛ لا تدقيق شامل|
 
-الخطوة التالية بعد حل البريد: اختبار إنشاء مستخدم وتأكيده واستعادة كلمته من الرابط المنشور، ثم توسيع CRUD والمسودات وروابط الشخصيات بالمشاهد قبل أي إعلان جاهزية للإنتاج.
+الاختبارات النهائية والإصدار المنشور في TEST_REPORT.md. لا تُقرأ نتائج الإصدار الأول كتقرير للميزات المضافة حديثًا.

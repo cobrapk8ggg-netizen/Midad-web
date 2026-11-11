@@ -15,3 +15,9 @@ Supabase project pdfzdcwkkgapcwsnezvn (zeus-cloud)، PostgreSQL 17. مخطط إ�
 كل الجداول RLS بأربع سياسات منفصلة. USING وWITH CHECK على update. FKs مركبة تمنع ربط الطفل بمالك مشروع آخر. حذف cascade داخل المشروع. فهارس المالك وكل FK. الدالة midad_save_scene SECURITY INVOKER مع search_path فارغ وقفل FOR UPDATE. UUIDs تولد في القاعدة. الملفات في bucket خاص midad-assets ومسار uid/file. لا واجهة رفع أصول بعد.
 
 الترحيل: supabase/migrations/20261111161005_midad_core.sql أنشأه CLI v3.1.0. نُفذ نصه عبر MCP execute_sql مع حفظه بالمستودع؛ لا يوجد إدخال remote migration history حتى تتم تسوية CLI linked migration baseline. لا تعِد تطبيق CREATE TABLE على المشروع الحالي دون baseline. يلزم اختبار reset/إعادة تطبيق على قاعدة معزولة قبل اعتبار دورة الترحيل مكتملة.
+
+## توسعة الإصدار الثاني
+Migration 20261111172030: midad_arcs، relationships، sessions، حقول الشخصيات، روابط أحداث→مشاهد/أقواس، وmidad_private.signup_limits. كل الجداول العامة RLS بملكية، private schema ممنوعة على العميل. rate limiter SECURITY DEFINER بمسار فارغ وEXECUTE على service_role فقط.
+Migration 20261111173015: preferences (unique user_id) وannotations مع scene_id/owner FK، kind/body/quote.
+Migration 20261111174047: drafts مع book/owner، chapter.draft_id، project.cover_path وentity.image_path. لا public bucket.
+النصوص والكيانات والتخطيط ليست JSON واحدًا؛ JSONB للمحرر والحقول المرنة والتفضيلات فقط.

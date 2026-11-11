@@ -1,0 +1,2 @@
+[functions.midad-signup]
+verify_jwt = false

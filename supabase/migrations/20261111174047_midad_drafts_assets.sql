@@ -1,0 +1,13 @@
+create table public.midad_drafts(id uuid primary key default gen_random_uuid(),user_id uuid not null default auth.uid(),book_id uuid not null,title text not null,created_at timestamptz not null default now(),unique(id,user_id),foreign key(book_id,user_id) references public.midad_books(id,user_id) on delete cascade);
+alter table public.midad_drafts enable row level security;
+create policy owner_select on public.midad_drafts for select to authenticated using((select auth.uid())=user_id);
+create policy owner_insert on public.midad_drafts for insert to authenticated with check((select auth.uid())=user_id);
+create policy owner_update on public.midad_drafts for update to authenticated using((select auth.uid())=user_id) with check((select auth.uid())=user_id);
+create policy owner_delete on public.midad_drafts for delete to authenticated using((select auth.uid())=user_id);
+grant select,insert,update,delete on public.midad_drafts to authenticated;
+create index on public.midad_drafts(user_id);
+create index on public.midad_drafts(book_id);
+alter table public.midad_chapters add column draft_id uuid,add foreign key(draft_id,user_id) references public.midad_drafts(id,user_id) on delete cascade;
+create index on public.midad_chapters(draft_id);
+alter table public.midad_projects add column cover_path text;
+alter table public.midad_entities add column image_path text;

@@ -1,3 +1,5 @@
+> تحديث v2: أقسام نقل الويب أدناه تسجل خطة التحليل الأولى. الحالة التنفيذية الحالية لكل ميزة في [FEATURE_STATUS.md](FEATURE_STATUS.md)، بعد إضافة مسودات وعلاقات وحواشٍ وأقواس وSprint.
+
 # Novalist Feature Audit → خريطة مِداد
 
 المصدر المقروء: syfslfk00-debug/novalist-official، الفرع build/ipados18-unsigned-ipa، commit b430dc5797867273a385761e400402ccdeefacc2. تحققنا أيضًا من HEAD للمصدر Drommedhar/novalist-official (4d1c8ee6c85326fcaaf973790ad609b221d53839)؛ لم نخلط نسخة HEAD مع الفرع المرجعي. هذا تحليل للفرع المرجعي، وليس إثبات تكافؤ كامل مع كل تطورات المصدر الأصلي.

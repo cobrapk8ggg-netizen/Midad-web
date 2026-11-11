@@ -1,2 +1,34 @@
-import {describe,it,expect} from 'vitest';import {countWords,plainDocument} from '../lib/words';import {exportBook} from '../lib/export';import {unzipSync,strFromU8} from 'fflate';
-describe('Arabic manuscript',()=>{it('counts Arabic diacritics, mixed English, and punctuation',()=>{expect(countWords('هٰذه حكايةٌ، فيها MIDAD 2026.')).toBe(6)});it('preserves blank paragraphs and Unicode',()=>{expect(plainDocument('مرحبًا\n\nWorld').content).toHaveLength(3)});it('round-trips TXT, Markdown, DOCX and EPUB content',async()=>{for(const fmt of ['txt','md','docx','epub']){const b=await exportBook('مِداد',[{title:'الفصل الأول',text:'العربية & English <نص>\nفقرة ثانية.'}],fmt);expect(b.size).toBeGreaterThan(50);if(fmt==='txt'||fmt==='md')expect(await b.text()).toContain('العربية & English');else{const zip=unzipSync(new Uint8Array(await b.arrayBuffer()));const xml=strFromU8(zip[fmt==='docx'?'word/document.xml':'OEBPS/c0.xhtml']);expect(xml).toContain('العربية &amp; English');expect(xml).toContain('فقرة ثانية.');if(fmt==='epub')expect(strFromU8(zip.mimetype)).toBe('application/epub+zip')}}})});
+import { describe, it, expect } from "vitest";
+import { countWords, plainDocument } from "../lib/words";
+import { exportBook } from "../lib/export";
+import { unzipSync, strFromU8 } from "fflate";
+describe("Arabic manuscript", () => {
+  it("counts Arabic diacritics, mixed English, and punctuation", () => {
+    expect(countWords("هٰذه حكايةٌ، فيها MIDAD 2026.")).toBe(6);
+  });
+  it("preserves blank paragraphs and Unicode", () => {
+    expect(plainDocument("مرحبًا\n\nWorld").content).toHaveLength(3);
+  });
+  it("round-trips TXT, Markdown, DOCX and EPUB content", async () => {
+    for (const fmt of ["txt", "md", "docx", "epub"]) {
+      const b = await exportBook(
+        "مِداد",
+        [{ title: "الفصل الأول", text: "العربية & English <نص>\nفقرة ثانية." }],
+        fmt,
+      );
+      expect(b.size).toBeGreaterThan(50);
+      if (fmt === "txt" || fmt === "md")
+        expect(await b.text()).toContain("العربية & English");
+      else {
+        const zip = unzipSync(new Uint8Array(await b.arrayBuffer()));
+        const xml = strFromU8(
+          zip[fmt === "docx" ? "word/document.xml" : "OEBPS/c0.xhtml"],
+        );
+        expect(xml).toContain("العربية &amp; English");
+        expect(xml).toContain("فقرة ثانية.");
+        if (fmt === "epub")
+          expect(strFromU8(zip.mimetype)).toBe("application/epub+zip");
+      }
+    }
+  });
+});
