@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';import fs from 'node:fs';
-const creds=JSON.parse(fs.readFileSync('/workspace/scratch/qa-credentials.json','utf8'));
+const creds=JSON.parse(fs.readFileSync(process.env.E2E_CREDENTIALS_FILE||'/workspace/scratch/qa-credentials.json','utf8'));
 test('Arabic author journey, revisions, offline recovery and responsive screens',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await expect(page.getByRole('heading',{name:'عد إلى حكايتك.'})).toBeVisible();await page.screenshot({path:'docs/screenshots/auth-desktop.png',fullPage:true});
  await page.getByLabel('البريد الإلكتروني').fill(creds.emailA);await page.getByLabel('كلمة المرور',{exact:true}).fill(creds.password);await page.getByRole('button',{name:'دخول إلى مِداد'}).click();await expect(page.getByRole('button',{name:'رواية جديدة',exact:true})).toBeVisible();await page.screenshot({path:'docs/screenshots/library-empty.png',fullPage:true});
