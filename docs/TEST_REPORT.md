@@ -26,6 +26,9 @@
 فُتحت لقطات auth-desktop وeditor-desktop وlibrary-ipad وeditor-phone عبر عارض الصور. تم تقييم الأسود، توازن التكوين، اتصال العربية، تباين المخطوطة، أحجام اللوحات والزجاج. أُصلح تسرب النص خلف لوحة الهاتف. ما زالت metadata صغيرة وأزرار ترتيب تحتاج تحسين أهداف اللمس. لا ندعي اختبار iPad A10 أو Safari فعلي أو WCAG AA كامل.
 
 ## النشر
-Vercel production: **READY**، https://midad-writing.vercel.app . إصدار أول منشور من commit 9cb9752b5fb5c6d751e6019ba964f067aa41b642، deployment dpl_JAhZnvzYZA13zskEmu4JSRCtjPTX. اختبار Chromium على الرابط الحقيقي: دخول ناجح، استرجاع مخطوطة، كتابة تعديل من الموقع المنشور، reload ثم إثبات الاسترجاع، pageErrors=[]؛ الدليل production-results.json وproduction-editor.png. لاحقًا تُنشر إصلاحات أسماء حقول الوصول وتسميات الخطوط وتحسين لوحات الهاتف من آخر commit.
+Vercel production: **READY**، https://midad-writing.vercel.app . إصدار أول منشور من commit 9cb9752b5fb5c6d751e6019ba964f067aa41b642، deployment dpl_JAhZnvzYZA13zskEmu4JSRCtjPTX. اختبار Chromium على الرابط الحقيقي: دخول ناجح، استرجاع مخطوطة، كتابة تعديل من الموقع المنشور، reload ثم إثبات الاسترجاع، pageErrors=[]؛ الدليل production-results.json وproduction-editor.png. آخر إصدار منشور: commit 16d48e5f15ce1c2919387bd272bcffec78923033، deployment dpl_5VtCTfspMuqkf56JvLKxcAeENiTo، READY. أُعيد اختبار الدخول والحفظ والاستعادة والخروج وتحميل خطي Plex/Amiri على هذا الإصدار؛ النتائج في production-results.json.
 
 المستودع المعتمد https://github.com/cobrapk8ggg-netizen/Midad-web كان عامًا وفارغًا من التطبيق عند البداية؛ استخدم بدل إنشاء مستودع آخر. لم تُنشر بيانات مستخدمين حقيقيين. لقطات المخطوطة من حسابات QA فقط. لا يعتبر المنتج جاهزًا للإنتاج الكامل قبل حل SMTP وتوسيع الميزات والاختبارات الموضحة في FEATURE_STATUS.md.
+
+## تنظيف الاختبار
+بعد نجاح التحقق المنشور حُذفت جلسات وحسابات QA المؤقتة وبياناتها التابعة فقط. بقيت إعدادات Auth وبيانات zeus_ دون تغيير.
