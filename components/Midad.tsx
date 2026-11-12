@@ -1459,10 +1459,10 @@ export default function Midad() {
                 ? [
                     { label: "الكتابة", fn: () => void navigate("write") },
                     {
-                      label: "العالم والشخصيات",
+                      label: "الشخصيات والأماكن",
                       fn: () => void navigate("world"),
                     },
-                    { label: "التخطيط", fn: () => void navigate("plan") },
+                    { label: "الأحداث", fn: () => void navigate("plan") },
                     { label: "ملاحظات", fn: () => void navigate("notes") },
                     {
                       label: "التصدير والاستيراد",
@@ -1478,7 +1478,17 @@ export default function Midad() {
                   ]
                 : []),
             ]
-              .filter((x) => x.label.includes(paletteQuery))
+              .filter(
+                (x) =>
+                  x.label.includes(paletteQuery) &&
+                  (owner ||
+                    ![
+                      "الشخصيات والأماكن",
+                      "الأحداث",
+                      "ملاحظات",
+                      "التصدير والاستيراد",
+                    ].includes(x.label)),
+              )
               .map((x) => (
                 <button key={x.label} onClick={x.fn}>
                   {x.label}
