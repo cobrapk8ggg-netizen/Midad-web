@@ -1,6 +1,8 @@
 import "./globals.css";
 import "./liquid.css";
 import "./platform.css";
+import "./writer.css";
+import "./social.css";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "مِداد — مساحة لروايتك",

@@ -9,22 +9,12 @@ import {
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
-import {
-  Bold,
-  Italic,
-  Underline,
-  Undo2,
-  Redo2,
-  List,
-  Quote,
-  Heading2,
-  AlignRight,
-  AlignCenter,
-  Search,
-  Check,
-  CloudOff,
-  AlertCircle,
-} from "lucide-react";
+import { TextStyleKit } from "@tiptap/extension-text-style";
+import Highlight from "@tiptap/extension-highlight";
+import { ParagraphFlow } from "../lib/editor-flow";
+import { fontFamily } from "../lib/fonts";
+import EditorTools, { type WriterPreferences } from "./EditorTools";
+import { Check, CloudOff, AlertCircle } from "lucide-react";
 import { saveScene } from "../lib/supabase";
 import { isGuestActive } from "../lib/guest";
 import type { Scene } from "../lib/types";
@@ -48,9 +38,22 @@ const Writer = forwardRef<
     width: number;
     lineHeight: number;
     onReady: (editor: Editor) => void;
+    onPreferences?: (prefs: Partial<WriterPreferences>) => void;
+    preferenceStatus?: string;
   }
 >(function Writer(
-  { scene, userId, onSaved, size, font, width, lineHeight, onReady },
+  {
+    scene,
+    userId,
+    onSaved,
+    size,
+    font,
+    width,
+    lineHeight,
+    onReady,
+    onPreferences,
+    preferenceStatus,
+  },
   ref,
 ) {
   const key = `midad:${userId}:${scene.id}`;
@@ -135,7 +138,10 @@ const Writer = forwardRef<
   }
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({ link: { openOnClick: false } }),
+      TextStyleKit,
+      Highlight.configure({ multicolor: true }),
+      ParagraphFlow,
       AnnotationMark,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
@@ -204,79 +210,13 @@ const Writer = forwardRef<
   };
   return (
     <>
-      <div
-        className="editor-toolbar glass"
-        role="toolbar"
-        aria-label="تنسيق النص"
-      >
-        {[
-          {
-            label: "عريض",
-            icon: Bold,
-            fn: () => editor?.chain().focus().toggleBold().run(),
-            active: editor?.isActive("bold"),
-          },
-          {
-            label: "مائل",
-            icon: Italic,
-            fn: () => editor?.chain().focus().toggleItalic().run(),
-          },
-          {
-            label: "تسطير",
-            icon: Underline,
-            fn: () => editor?.chain().focus().toggleUnderline().run(),
-          },
-          {
-            label: "عنوان",
-            icon: Heading2,
-            fn: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-          },
-          {
-            label: "اقتباس",
-            icon: Quote,
-            fn: () => editor?.chain().focus().toggleBlockquote().run(),
-          },
-          {
-            label: "قائمة",
-            icon: List,
-            fn: () => editor?.chain().focus().toggleBulletList().run(),
-          },
-          {
-            label: "محاذاة يمين",
-            icon: AlignRight,
-            fn: () => editor?.chain().focus().setTextAlign("right").run(),
-          },
-          {
-            label: "توسيط",
-            icon: AlignCenter,
-            fn: () => editor?.chain().focus().setTextAlign("center").run(),
-          },
-          {
-            label: "تراجع",
-            icon: Undo2,
-            fn: () => editor?.chain().focus().undo().run(),
-          },
-          {
-            label: "إعادة",
-            icon: Redo2,
-            fn: () => editor?.chain().focus().redo().run(),
-          },
-        ].map((x) => (
-          <button
-            key={x.label}
-            aria-label={x.label}
-            title={x.label}
-            aria-pressed={!!x.active}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={x.fn}
-          >
-            <x.icon size={17} />
-          </button>
-        ))}
-        <button aria-label="بحث واستبدال" onClick={() => setFind(!find)}>
-          <Search size={17} />
-        </button>
-      </div>
+      <EditorTools
+        editor={editor}
+        prefs={{ font, size, width, lineHeight }}
+        preferenceStatus={preferenceStatus}
+        onPreferences={onPreferences}
+        onFind={() => setFind((x) => !x)}
+      />
       {find && (
         <div className="find-bar">
           <input
@@ -370,7 +310,7 @@ const Writer = forwardRef<
             maxWidth: width,
             fontSize: size,
             lineHeight,
-            fontFamily: font === "amiri" ? "Amiri,serif" : "Plex,sans-serif",
+            fontFamily: fontFamily(font),
           }}
         >
           <div className="scene-label">{scene.title}</div>

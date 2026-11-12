@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-12T04:39:00.718Z",
+  "durationMs": 40864.584,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "V4 global ranking, private reading shelf and following feed use actual signed-in account",
+      "status": "expected"
+    },
+    {
+      "name": "V4 large Arabic chapter, paragraph formatting, safe link, undo and reload preserve actual content",
+      "status": "expected"
+    },
+    {
+      "name": "V4: advanced Arabic formatting, visible font choices, persistence, taxonomy backup and cloud transfer",
+      "status": "expected"
+    },
+    {
+      "name": "V4: real author photos, links, selected private novels, public profile, follow rating bookmarks discovery and reader",
+      "status": "expected"
+    }
+  ]
+}

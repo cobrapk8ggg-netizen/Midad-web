@@ -1,3 +1,4 @@
+import { classificationPayloads } from "./classification-data";
 import { createClient } from "@supabase/supabase-js";
 import {
   isGuestActive,
@@ -194,6 +195,22 @@ export async function transferGuestToAccount() {
       const { error } = await supabase.from("midad_" + table).insert(value);
       if (error) throw error;
     }
+  }
+  for (const p of classificationPayloads(rows)) {
+    const existing = await supabase
+      .from("midad_novel_metadata")
+      .select("project_id")
+      .eq("project_id", p.project_id)
+      .maybeSingle();
+    if (existing.error) throw existing.error;
+    if (existing.data) continue;
+    const { error } = await supabase.rpc("midad_save_novel_metadata", {
+      p_id: p.project_id,
+      p_metadata: p.metadata,
+      p_genres: p.genres,
+      p_tags: p.tags,
+    });
+    if (error) throw error;
   }
   return rows.filter((r) => r._table === "projects").length;
 }

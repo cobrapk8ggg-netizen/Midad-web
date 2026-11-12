@@ -27,3 +27,7 @@ Migration 20261111174047: drafts مع book/owner، chapter.draft_id، project.co
 midad_projects.story وmidad_chapters.writing_mode يضيفان قصة الرواية والفصل المستمر/المشاهد الاختيارية. midad_profiles تخزن اسم مستخدم فريد واسمًا ظاهرًا ونبذة وخيار الظهور. midad_members تربط حسابًا برواية بدور reader/editor دون نقل الملكية. midad_publications تشير إلى فصول أصلية اختار المالك نشرها. واجهات عامة محددة تعيد المنشور فقط.
 
 midad_private.bridge_config/pending/links/ai_writes تحفظ تجزئة سر الجسر وطلبات التفويض المؤقتة وروابط حسابات مِداد المتعددة ومفاتيح منع تكرار الإنشاء. account_id UUID مستقل لكل حساب مفوض، المفتاح المركب يمنع تكرار نفس حساب مِداد لنفس هوية المكوّن. لا كلمات مرور أو JWTs محفوظة في هذه الجداول. source migrations بتاريخ 20261112.
+
+## V4
+توسعة midad_profiles بصور/غلاف/شعار/موقع. جداول midad_profile_links وmidad_showcase وmidad_genres وmidad_novel_metadata وmidad_project_genres وmidad_novel_tags وmidad_follows وmidad_ratings وmidad_reading_list. علاقات مالك مركبة للتصنيف والرف؛ FKs حذف cascade وفهارس FK. Genres قاموس 18 نوعًا، JSONB ليس بديلًا عن علاقات الوسوم والتقييمات.
+RPC حفظ atomic SECURITY INVOKER، وcatalog/profile/reader SECURITY DEFINER مقيدة بالنشر. الكتالوج يدعم novel-id والبحث والتصفية والتقييم/pagination وحساب القراءة/المتابعة الحالي. public_asset يتيح إصدار رابط موقّع فقط للأصل المختار علنًا وبادئة المالك. migrations: 20261112035307،040239،040645،043700.

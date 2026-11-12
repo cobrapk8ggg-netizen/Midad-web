@@ -1,4 +1,6 @@
 import type { JSONContent } from "@tiptap/react";
+import { safeFont, safeColor } from "./fonts";
+export { escapeXml, richHtml } from "./rich-html";
 import {
   Paragraph,
   TextRun,
@@ -6,58 +8,39 @@ import {
   AlignmentType,
   type IRunOptions,
 } from "docx";
-export const escapeXml = (s: string) =>
-  s.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&apos;",
-      })[c]!,
-  );
 const safeAlign = (node: JSONContent) =>
   ["right", "left", "center", "justify"].includes(node.attrs?.textAlign)
     ? node.attrs!.textAlign
     : "right";
-export function richHtml(node: JSONContent): string {
-  if (node.type === "text") {
-    let text = escapeXml(node.text || "");
-    for (const mark of node.marks || []) {
-      if (mark.type === "bold") text = "<strong>" + text + "</strong>";
-      if (mark.type === "italic") text = "<em>" + text + "</em>";
-      if (mark.type === "underline") text = "<u>" + text + "</u>";
-      if (mark.type === "strike") text = "<s>" + text + "</s>";
-      if (mark.type === "code") text = "<code>" + text + "</code>";
-    }
-    return text;
-  }
-  if (node.type === "hardBreak") return "<br/>";
-  const inner = (node.content || []).map(richHtml).join("");
-  if (node.type === "doc") return inner;
-  if (node.type === "heading") {
-    const level = Math.max(1, Math.min(6, Number(node.attrs?.level) || 2));
-    return `<h${level} style="text-align:${safeAlign(node)}">${inner}</h${level}>`;
-  }
-  const tags: Record<string, string> = {
-    paragraph: "p",
-    bulletList: "ul",
-    orderedList: "ol",
-    listItem: "li",
-    blockquote: "blockquote",
-    codeBlock: "pre",
-  };
-  const tag = tags[node.type || ""];
-  return tag
-    ? `<${tag}${tag === "p" ? ` style="text-align:${safeAlign(node)}"` : ""}>${inner}</${tag}>`
-    : inner;
-}
+const safeDirection = (n: JSONContent) =>
+  ["rtl", "ltr", "auto"].includes(n.attrs?.textDirection)
+    ? n.attrs!.textDirection
+    : "rtl";
+const safeIndent = (n: JSONContent) =>
+  Math.min(4, Math.max(0, Number(n.attrs?.firstIndent) || 0));
 function runs(node: JSONContent, extra: Partial<IRunOptions> = {}): TextRun[] {
   if (node.type === "hardBreak") return [new TextRun({ break: 1 })];
   if (node.type === "text") {
     const marks = new Set((node.marks || []).map((m) => m.type));
+    const a = node.marks?.find((m) => m.type === "textStyle")?.attrs || {};
+    const f = safeFont(a.fontFamily),
+      color = safeColor(a.color),
+      bg =
+        safeColor(
+          node.marks?.find((m) => m.type === "highlight")?.attrs?.color,
+        ) || safeColor(a.backgroundColor);
+    const size = Number.parseFloat(a.fontSize);
+    const style: Partial<IRunOptions> = {
+      ...(f ? { font: f === "Plex" ? "IBM Plex Sans Arabic" : f } : {}),
+      ...(color ? { color: color.slice(1) } : {}),
+      ...(Number.isFinite(size) && size >= 8 && size <= 80
+        ? {
+            size: Math.round(size * 1.5),
+            sizeComplexScript: Math.round(size * 1.5),
+          }
+        : {}),
+      ...(bg ? { shading: { fill: bg.slice(1) } } : {}),
+    };
     return [
       new TextRun({
         text: node.text || "",
@@ -66,6 +49,7 @@ function runs(node: JSONContent, extra: Partial<IRunOptions> = {}): TextRun[] {
         italics: marks.has("italic"),
         underline: marks.has("underline") ? {} : undefined,
         strike: marks.has("strike"),
+        ...style,
         ...extra,
       }),
     ];
@@ -106,7 +90,10 @@ export function richDocx(
             ? HeadingLevel[`HEADING_${level}` as keyof typeof HeadingLevel]
             : undefined,
         bullet: bullet ? { level: 0 } : undefined,
-        indent: quote ? { right: 400 } : undefined,
+        indent: {
+          firstLine: safeIndent(node) * 240,
+          ...(quote ? { right: 400 } : {}),
+        },
         children: runs(node, quote ? { italics: true } : {}),
       }),
     ];

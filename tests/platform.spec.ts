@@ -150,6 +150,16 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
   const suffix = Date.now();
   await login(b, emailB, password);
   await b.getByRole("button", { name: "حسابي", exact: true }).click();
+  if (
+    await b
+      .locator(".account-topline")
+      .getByRole("button", { name: "تعديل الملف", exact: true })
+      .count()
+  )
+    await b
+      .locator(".account-topline")
+      .getByRole("button", { name: "تعديل الملف", exact: true })
+      .click();
   await b.getByLabel("اسمك الظاهر").fill("صديق الكاتب");
   await b
     .getByLabel("اسم المستخدم — لإضافتك إلى رواية")
@@ -158,10 +168,20 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
     .getByRole("button", { name: "حفظ الملف الشخصي", exact: true })
     .click();
   await expect(
-    b.getByRole("button", { name: "تم حفظ الملف", exact: true }),
+    b.getByRole("status").filter({ hasText: "تم حفظ ملفك ورف رواياتك." }),
   ).toBeVisible();
   await login(a, emailA, password);
   await a.getByRole("button", { name: "حسابي", exact: true }).click();
+  if (
+    await a
+      .locator(".account-topline")
+      .getByRole("button", { name: "تعديل الملف", exact: true })
+      .count()
+  )
+    await a
+      .locator(".account-topline")
+      .getByRole("button", { name: "تعديل الملف", exact: true })
+      .click();
   await a.getByLabel("اسمك الظاهر").fill("كاتب الذرة");
   await a
     .getByLabel("اسم المستخدم — لإضافتك إلى رواية")
@@ -174,12 +194,12 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
     .getByRole("button", { name: "حفظ الملف الشخصي", exact: true })
     .click();
   await expect(
-    a.getByRole("button", { name: "تم حفظ الملف", exact: true }),
+    a.getByRole("status").filter({ hasText: "تم حفظ ملفك ورف رواياتك." }),
   ).toBeVisible();
   await a.screenshot({ path: "docs/screenshots/v3/profile.png" });
   const profilePage = await browser.newPage();
   await profilePage.goto("/profile?username=writer_" + suffix);
-  await expect(profilePage.locator(".public-profile-heading")).toContainText(
+  await expect(profilePage.locator(".writer-identity")).toContainText(
     "كاتب عربي يشارك",
   );
   await profilePage.screenshot({

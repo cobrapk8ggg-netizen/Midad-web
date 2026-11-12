@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-12T04:40:52.509Z",
+  "passed": 4,
+  "checks": [
+    "Published novel with private author masks name handle and photo",
+    "Existing reader vote excluded when reader becomes coauthor",
+    "Coauthor cannot update old reader rating",
+    "Confidence ranking uses five prior votes at three point five"
+  ]
+}

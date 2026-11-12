@@ -39,6 +39,8 @@ import { Brand, Dialog, Field, errorMessage } from "./ui";
 import Auth from "./Auth";
 import Writer, { type WriterHandle } from "./Writer";
 import Workspace from "./Workspace";
+import { FONT_OPTIONS } from "../lib/fonts";
+import { useWriterPreferences } from "../lib/use-writer-preferences";
 import NovelHome from "./NovelHome";
 import { Account, Community, ChapterText } from "./Platform";
 import LiquidSculpture from "./LiquidSculpture";
@@ -79,16 +81,45 @@ export default function Midad() {
   const [focus, setFocus] = useState(false);
   const [binder, setBinder] = useState(true);
   const [context, setContext] = useState(true);
-  const [size, setSize] = useState(24);
-  const [font, setFont] = useState("amiri");
-  const [width, setWidth] = useState(720);
-  const [lineHeight, setLineHeight] = useState(2.2);
-  const [prefsReady, setPrefsReady] = useState(false);
+  const {
+    size,
+    setSize,
+    font,
+    setFont,
+    width,
+    setWidth,
+    lineHeight,
+    setLineHeight,
+    preferenceStatus,
+    flushPreferences,
+  } = useWriterPreferences(user?.id, guest);
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [preview, setPreview] = useState<Revision | null>(null);
   const [recovery, setRecovery] = useState(false);
   const writer = useRef<WriterHandle>(null);
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    setProfileAvatar(null);
+    if (!cloudUser) return;
+    const refresh = () => {
+      void supabase
+        .from("midad_profiles")
+        .select("avatar_path")
+        .eq("user_id", cloudUser.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (active) setProfileAvatar(data?.avatar_path || null);
+        });
+    };
+    refresh();
+    window.addEventListener("midad:profile-updated", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("midad:profile-updated", refresh);
+    };
+  }, [cloudUser?.id]);
   useEffect(() => {
     if (innerWidth < 1101) setContext(false);
     if (innerWidth < 761) setBinder(false);
@@ -133,49 +164,6 @@ export default function Midad() {
         .then(setProjects)
         .catch((e) => setError(errorMessage(e)));
   }, [user?.id]);
-  useEffect(() => {
-    if (!user) return;
-    setPrefsReady(false);
-    try {
-      const p = JSON.parse(
-        localStorage.getItem("midad:editor:" + user.id) || "null",
-      );
-      if (p) {
-        setSize(p.size || 24);
-        setWidth(p.width || 720);
-        setFont(p.font || "amiri");
-        setLineHeight(p.lineHeight || 2.2);
-      }
-    } catch {}
-    setPrefsReady(true);
-    if (!guest)
-      list<{
-        id: string;
-        settings: {
-          size?: number;
-          width?: number;
-          font?: string;
-          lineHeight?: number;
-        };
-      }>("preferences")
-        .then((rows) => {
-          const p = rows[0]?.settings;
-          if (p) {
-            setSize(p.size || 24);
-            setWidth(p.width || 720);
-            setFont(p.font || "amiri");
-            setLineHeight(p.lineHeight || 2.2);
-          }
-        })
-        .catch((e) => setError(errorMessage(e)));
-  }, [user?.id]);
-  useEffect(() => {
-    if (prefsReady && user)
-      localStorage.setItem(
-        "midad:editor:" + user.id,
-        JSON.stringify({ size, width, font, lineHeight }),
-      );
-  }, [size, width, font, lineHeight, prefsReady, user?.id]);
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -527,7 +515,13 @@ export default function Midad() {
             <LogOut size={18} />
           </button>
           <span className="avatar">
-            {guest ? "ض" : user.email?.slice(0, 1).toUpperCase()}
+            {profileAvatar ? (
+              <PrivateImage path={profileAvatar} alt="صورتك الشخصية" />
+            ) : guest ? (
+              "ض"
+            ) : (
+              user.email?.slice(0, 1).toUpperCase()
+            )}
           </span>
         </div>
       </header>
@@ -1050,7 +1044,14 @@ export default function Midad() {
                   font={font}
                   width={width}
                   lineHeight={lineHeight}
+                  preferenceStatus={preferenceStatus}
                   onReady={setActiveEditor}
+                  onPreferences={(p) => {
+                    if (p.font) setFont(p.font);
+                    if (p.size) setSize(p.size);
+                    if (p.width) setWidth(p.width);
+                    if (p.lineHeight) setLineHeight(p.lineHeight);
+                  }}
                   onSaved={(s) => {
                     setScene((current) => (current?.id === s.id ? s : current));
                     setScenes((xs) => xs.map((x) => (x.id === s.id ? s : x)));
@@ -1176,8 +1177,11 @@ export default function Midad() {
                       value={font}
                       onChange={(e) => setFont(e.target.value)}
                     >
-                      <option value="amiri">أميري — أدبي</option>
-                      <option value="plex">IBM Plex — معاصر</option>
+                      {FONT_OPTIONS.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <label className="field">
@@ -1423,13 +1427,7 @@ export default function Midad() {
             disabled={busy}
             onClick={() =>
               void run(async () => {
-                const rows = await list<{ id: string }>("preferences");
-                const value = {
-                  settings: { size, width, font, lineHeight },
-                  updated_at: new Date().toISOString(),
-                };
-                if (rows[0]) await update("preferences", rows[0].id, value);
-                else await insert("preferences", value);
+                await flushPreferences();
                 setModal("");
               })
             }

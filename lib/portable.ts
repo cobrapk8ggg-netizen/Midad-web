@@ -1,3 +1,7 @@
+import {
+  CLASSIFICATION_TABLES,
+  classificationPayloads,
+} from "./classification-data";
 import { supabase, list, insert, remove } from "./supabase";
 import { isGuestActive } from "./guest";
 export const portableFields: Record<string, string[]> = {
@@ -42,6 +46,15 @@ export const portableFields: Record<string, string[]> = {
   ],
   relationships: ["project_id", "source_id", "target_id", "label"],
   sessions: ["project_id", "started_at", "ended_at", "duration", "word_delta"],
+  novel_metadata: [
+    "project_id",
+    "status",
+    "age_rating",
+    "language",
+    "warnings",
+  ],
+  project_genres: ["project_id", "genre_code"],
+  novel_tags: ["project_id", "tag"],
 };
 type Row = Record<string, unknown> & { id: string; _table: string };
 export type Backup = {
@@ -65,7 +78,13 @@ export async function createBackup(): Promise<Backup> {
               row.user_id === session?.user.id,
           )
           .map((row) => ({
-            id: String(row.id),
+            id: row.id
+              ? String(row.id)
+              : table +
+                ":" +
+                row.project_id +
+                ":" +
+                (row.genre_code || row.tag || "meta"),
             _table: table,
             ...Object.fromEntries(
               portableFields[table]
@@ -141,6 +160,7 @@ export async function restoreBackup(backup: Backup) {
   const created: string[] = [];
   try {
     for (const [table, fields] of Object.entries(portableFields)) {
+      if (!isGuestActive() && CLASSIFICATION_TABLES.includes(table)) continue;
       for (const row of backup.rows.filter((r) => r._table === table)) {
         const value = {
           id: mapping.get(row.id)!,
@@ -164,6 +184,16 @@ export async function restoreBackup(backup: Backup) {
         if (table === "projects") created.push(value.id);
       }
     }
+    if (!isGuestActive())
+      for (const p of classificationPayloads(backup.rows)) {
+        const { error } = await supabase.rpc("midad_save_novel_metadata", {
+          p_id: mapping.get(p.project_id),
+          p_metadata: p.metadata,
+          p_genres: p.genres,
+          p_tags: p.tags,
+        });
+        if (error) throw error;
+      }
   } catch (error) {
     for (const id of created) {
       try {

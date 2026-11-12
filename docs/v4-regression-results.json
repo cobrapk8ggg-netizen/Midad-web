@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-12T04:32:14.149Z",
+  "durationMs": 134542.09600000002,
+  "passed": 10,
+  "failed": 0,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "Arabic author journey, revisions, offline recovery and responsive screens",
+      "status": "expected"
+    },
+    {
+      "name": "novel → story → full chapter → optional scenes → merged reading, responsive and local recovery",
+      "status": "expected"
+    },
+    {
+      "name": "real profiles, invitation, friend reading and coauthor save, explicit publication",
+      "status": "expected"
+    },
+    {
+      "name": "consent uses MIDAD login independently of GPT email and offers account switching",
+      "status": "expected"
+    },
+    {
+      "name": "authentication error, notes CRUD, verified download and import preview",
+      "status": "expected"
+    },
+    {
+      "name": "offline draft survives reload and history restores protected current version",
+      "status": "expected"
+    },
+    {
+      "name": "second tab edit is rejected without overwriting newer manuscript",
+      "status": "expected"
+    },
+    {
+      "name": "independent drafts, private cover and editor preferences across browser contexts",
+      "status": "expected"
+    },
+    {
+      "name": "v2 guest workspace, real tools, backup, immediate signup and cloud transfer",
+      "status": "expected"
+    },
+    {
+      "name": "guest storage saves offline and refuses stale edits from a second tab",
+      "status": "expected"
+    }
+  ]
+}

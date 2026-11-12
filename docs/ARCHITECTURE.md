@@ -17,3 +17,6 @@ Auth ينشئ الحساب عبر Edge Function محددة للمنتج تستخ
 المكتبة → الرواية → القصة والفصول. book container داخلي يُنشأ تلقائيًا للتوافق مع البيانات السابقة. المستند الداخلي scene في الفصل المستمر لا يظهر كمتطلب أو كيان إضافي. writing_mode يميز الفصل الكامل من الفصل المقسم اختياريًا إلى مشاهد. القراءة والتصدير يرتبان الأجزاء داخل الفصل.
 
 `NovelHome`, `Platform`, و`Connect` تفصل قصة الرواية والمشاركة والملفات وصفحة الموافقة عن منطق محرر Tiptap. ربط ChatGPT خدمة MCP خاصة مستقلة على Sites، والواجهة الرئيسية باقية على Vercel. التفاصيل في GPT_CONNECTION.md.
+
+## V4
+طبقة الهوية: WriterProfile، IdentityHeader، SocialImage، SocialActions. اكتشاف: Discover + lib/social مع RPC محدودة الحقول؛ EnhancedReader يحمل فصلًا واحدًا. EditorTools مستقل يتابع selection عبر useEditorState؛ Writer يحتفظ بنفس Editor عبر الحفظ. use-writer-preferences يجمع ويحفظ الإعدادات بترتيب الطلبات. HTML آمن خفيف في rich-html مستقل عن docx لئلا يحمل القارئ مكتبة التصدير. تصنيف الروايات جداول علائقية؛ classification-data يربطها بالضيف والنقل والنسخ الاحتياطي.
