@@ -37,7 +37,9 @@ test("independent drafts, private cover and editor preferences across browser co
     page.getByRole("heading", { name: "مسودة جديدة", exact: true }),
   ).not.toBeVisible();
   await expect(
-    page.getByLabel("النسخة", { exact: true }).locator("option:checked"),
+    page
+      .getByRole("combobox", { name: "نسخة الفصول", exact: true })
+      .locator("option:checked"),
   ).toHaveText("المسودة البديلة");
   await expect(editor).toContainText("النص الأصلي");
   await editor.fill("هذا نص مختلف يخص المسودة البديلة وحدها.");
@@ -45,12 +47,12 @@ test("independent drafts, private cover and editor preferences across browser co
     page.getByRole("status").filter({ hasText: "محفوظ في حسابك" }),
   ).toBeVisible();
   await page
-    .getByLabel("النسخة", { exact: true })
+    .getByRole("combobox", { name: "نسخة الفصول", exact: true })
     .selectOption({ label: "الفصول الأصلية" });
   await expect(editor).toContainText("هذا النص الأصلي");
   await expect(editor).not.toContainText("المسودة البديلة وحدها");
   await page
-    .getByLabel("النسخة", { exact: true })
+    .getByRole("combobox", { name: "نسخة الفصول", exact: true })
     .selectOption({ label: "المسودة البديلة" });
   await expect(editor).toContainText("المسودة البديلة وحدها");
   await page.screenshot({ path: "docs/screenshots/v2/drafts.png" });
@@ -58,7 +60,9 @@ test("independent drafts, private cover and editor preferences across browser co
   await page.getByRole("button", { name: "حذف نهائي", exact: true }).click();
   await expect(editor).toContainText("هذا النص الأصلي");
   await expect(
-    page.getByLabel("النسخة", { exact: true }).locator("option"),
+    page
+      .getByRole("combobox", { name: "نسخة الفصول", exact: true })
+      .locator("option"),
   ).toHaveCount(1);
   await page.getByLabel("تباعد السطور").focus();
   await page.getByLabel("تباعد السطور").press("End");

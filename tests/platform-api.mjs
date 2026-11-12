@@ -13,6 +13,7 @@ try{
  good(await a.from('midad_profiles').upsert({user_id:uidA,username:'qa_a_'+suffix,display_name:'كاتب الاختبار',bio:'نبذة اختبار',is_public:false}));
  good(await b.from('midad_profiles').upsert({user_id:uidB,username:'qa_b_'+suffix,display_name:'صديق الكاتب',is_public:true}));
  check('Private profile hidden from other user',good(await b.from('midad_profiles').select('*').eq('user_id',uidA)).length===0);
+ check('Private profile hidden from anonymous profile RPC',good(await anon.rpc('midad_public_profile',{handle:'qa_a_'+suffix})).length===0);check('Public profile available without exposing email',good(await anon.rpc('midad_public_profile',{handle:'qa_b_'+suffix}))[0].display_name==='صديق الكاتب');
  check('Exact username resolves friend',good(await a.rpc('midad_find_profile',{handle:'qa_b_'+suffix}))[0].user_id===uidB);
  let r=await gateway(subject,'create_novel',{title:'x',request_id:novelRequest});check('Unlinked assistant blocked',r.status===403);
  r=await gateway(subject,'get_connection_link');check('Assistant connection request',r.status===200&&!!r.data.url);const nonce=new URL(r.data.url).searchParams.get('request');

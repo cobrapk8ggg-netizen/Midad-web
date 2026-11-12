@@ -195,6 +195,9 @@ export default function Midad() {
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, []);
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [view, project?.id]);
   async function guard() {
     const ok = await writer.current?.flush();
     if (ok === false) {
@@ -440,6 +443,7 @@ export default function Midad() {
         <nav aria-label="التنقل الرئيسي">
           <button
             className={view === "library" ? "active" : ""}
+            disabled={busy}
             onClick={() => void navigate("library")}
           >
             <Library size={17} />
@@ -462,6 +466,7 @@ export default function Midad() {
             ].map((n) => (
               <button
                 key={n.v}
+                disabled={busy}
                 className={view === n.v ? "active" : ""}
                 onClick={() => void navigate(n.v)}
               >
@@ -470,6 +475,7 @@ export default function Midad() {
               </button>
             ))}
           <button
+            disabled={busy}
             className={view === "community" ? "active" : ""}
             onClick={() => void navigate("community")}
           >
@@ -478,6 +484,7 @@ export default function Midad() {
           </button>
           {!guest && (
             <button
+              disabled={busy}
               className={view === "account" ? "active" : ""}
               onClick={() => void navigate("account")}
             >
@@ -645,6 +652,7 @@ export default function Midad() {
                   <div className="book-item" key={p.id}>
                     <button
                       className={"book-cover cover-" + (i % 3)}
+                      disabled={busy}
                       onClick={() => void openProject(p)}
                     >
                       <span className="cover-kicker">
@@ -660,7 +668,10 @@ export default function Midad() {
                       <span className="cover-brand">مِداد</span>
                     </button>
                     <div className="book-info">
-                      <button onClick={() => void openProject(p)}>
+                      <button
+                        disabled={busy}
+                        onClick={() => void openProject(p)}
+                      >
                         <h3>{p.title}</h3>
                       </button>
                       {(p.access_role === "owner" || !p.access_role) && (
@@ -868,6 +879,7 @@ export default function Midad() {
                     <label className="field">
                       النسخة
                       <select
+                        aria-label="نسخة الفصول"
                         value={draftId || ""}
                         onChange={(e) => {
                           const id = e.target.value;

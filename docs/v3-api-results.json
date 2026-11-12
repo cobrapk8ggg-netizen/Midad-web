@@ -1,8 +1,10 @@
 {
-  "date": "2026-11-12T03:09:01.888Z",
-  "passed": 38,
+  "date": "2026-11-12T03:24:17.874Z",
+  "passed": 40,
   "checks": [
     "Private profile hidden from other user",
+    "Private profile hidden from anonymous profile RPC",
+    "Public profile available without exposing email",
     "Exact username resolves friend",
     "Unlinked assistant blocked",
     "Assistant connection request",

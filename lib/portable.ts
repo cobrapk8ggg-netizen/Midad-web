@@ -1,4 +1,5 @@
 import { supabase, list, insert, remove } from "./supabase";
+import { isGuestActive } from "./guest";
 export const portableFields: Record<string, string[]> = {
   projects: ["title", "description", "story", "goal"],
   books: ["project_id", "title", "position"],
@@ -57,7 +58,12 @@ export async function createBackup(): Promise<Backup> {
     await Promise.all(
       Object.keys(portableFields).map(async (table) =>
         (await list<Record<string, unknown>>(table))
-          .filter((row) => !row.user_id || row.user_id === session?.user.id)
+          .filter(
+            (row) =>
+              isGuestActive() ||
+              !row.user_id ||
+              row.user_id === session?.user.id,
+          )
           .map((row) => ({
             id: String(row.id),
             _table: table,

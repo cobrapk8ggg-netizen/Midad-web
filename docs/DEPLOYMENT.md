@@ -10,3 +10,11 @@
 ## الإصدار الثاني
 نشر Edge Function midad-signup مستقل عن Vercel، source في supabase/functions/midad-signup/index.ts. verify_jwt=false لأنها مسار signup عام؛ الدالة تطبق تحقق الإدخال وrate limit. SUPABASE_SERVICE_ROLE_KEY متاح داخل runtime فقط ولم يُنقل إلى Vercel أو العميل. رابط المنتج الثابت ضمن CORS.
 تشغيل E2E بـnpm run test:e2e يفعّل proxy في Node؛ setup ينشئ حسابين مخصصين عبر مسار التسجيل الحقيقي أو يستعمل E2E_CREDENTIALS_FILE موجودًا. credentials خارج المستودع، وتُحذف fixtures بعد الاختبار النهائي بأدوات الإدارة.
+
+## V3
+
+موقع الويب: https://midad-writing.vercel.app . نُشرت نسخة `38aad139472dcbcea2ca1371f13cd99e6ae5591c` وتحقق منها المتصفح: تسجيل جديد بلا تأكيد، نقل الضيف، دخول لاحق، حفظ سحابي واسترجاع، بلا أخطاء JS أو overflow على الهاتف. يلحقها إصدار تصحيحي بعد اختبار المسارات القديمة والملف العام.
+
+MCP خاص: https://midad-chatgpt-writer.carefreepeach1.chatgpt.site/mcp . Sites version 2، source commit `a5c22e9`، 10 أدوات. سر MIDAD_BRIDGE_KEY داخل إعدادات خادم Sites فقط؛ Gateway يستخدم Supabase runtime secret المدمج، ولا يوجد secret في GitHub. رابط الدخول إلى Sites يثبت هوية مستخدم المكوّن فقط؛ ربط حساب الموقع وصلاحياته يحدث عبر /connect.
+
+التحقق النهائي المحلي للتصحيح: 10/10 Playwright، 5/5 Vitest، 40/40 API. نُشر ملف الكاتب العام والتصحيحات بعد هذه الفحوص. آخر SHA ورابط النشر يثبتان من بيانات Vercel والأدلة المرفقة عند الإصدار.

@@ -167,15 +167,37 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
     .getByLabel("اسم المستخدم — لإضافتك إلى رواية")
     .fill("writer_" + suffix);
   await a
+    .getByLabel("عنّي", { exact: true })
+    .fill("كاتب عربي يشارك رواياته مع القراء.");
+  await a.getByLabel("إظهار ملفي للقراء داخل المنصة").check();
+  await a
     .getByRole("button", { name: "حفظ الملف الشخصي", exact: true })
     .click();
   await expect(
     a.getByRole("button", { name: "تم حفظ الملف", exact: true }),
   ).toBeVisible();
   await a.screenshot({ path: "docs/screenshots/v3/profile.png" });
+  const profilePage = await browser.newPage();
+  await profilePage.goto("/profile?username=writer_" + suffix);
+  await expect(profilePage.locator(".public-profile-heading")).toContainText(
+    "كاتب عربي يشارك",
+  );
+  await profilePage.screenshot({
+    path: "docs/screenshots/v3/public-profile.png",
+  });
+  await profilePage.close();
   await a.getByRole("button", { name: "المكتبة", exact: true }).click();
   const title = "رواية مشتركة " + suffix;
   await createNovel(a, title);
+  await a.getByRole("button", { name: "قصة الرواية", exact: true }).click();
+  await a
+    .getByLabel("قصة " + title, { exact: true })
+    .fill("قصة محفوظة سحابيًا عن كاتبين يبنيان عالمًا مشتركًا.");
+  await a.getByRole("button", { name: "حفظ قصة الرواية", exact: true }).click();
+  await expect(
+    a.getByRole("button", { name: "تم حفظ قصة الرواية", exact: true }),
+  ).toBeVisible();
+  await a.getByRole("button", { name: "الفصول", exact: true }).click();
   await chapter(a, "فصل نكتبه معًا");
   await a
     .getByRole("textbox", { name: "نص الفصل" })
@@ -228,7 +250,9 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
     reader.getByText("لا توجد فصول منشورة متاحة هنا."),
   ).toBeVisible();
   await a.getByRole("button", { name: "تسجيل الخروج", exact: true }).click();
-  await expect(a.getByRole("button", {name:"دخول إلى مِداد",exact:true})).toBeVisible();
+  await expect(
+    a.getByRole("button", { name: "دخول إلى مِداد", exact: true }),
+  ).toBeVisible();
   await login(a, emailA, password);
   await a.getByRole("button", { name: title, exact: true }).first().click();
   await a.getByRole("button", { name: /01 فصل نكتبه معًا/ }).click();

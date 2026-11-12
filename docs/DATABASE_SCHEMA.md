@@ -21,3 +21,9 @@ Migration 20261111172030: midad_arcs، relationships، sessions، حقول ال�
 Migration 20261111173015: preferences (unique user_id) وannotations مع scene_id/owner FK، kind/body/quote.
 Migration 20261111174047: drafts مع book/owner، chapter.draft_id، project.cover_path وentity.image_path. لا public bucket.
 النصوص والكيانات والتخطيط ليست JSON واحدًا؛ JSONB للمحرر والحقول المرنة والتفضيلات فقط.
+
+## V3
+
+midad_projects.story وmidad_chapters.writing_mode يضيفان قصة الرواية والفصل المستمر/المشاهد الاختيارية. midad_profiles تخزن اسم مستخدم فريد واسمًا ظاهرًا ونبذة وخيار الظهور. midad_members تربط حسابًا برواية بدور reader/editor دون نقل الملكية. midad_publications تشير إلى فصول أصلية اختار المالك نشرها. واجهات عامة محددة تعيد المنشور فقط.
+
+midad_private.bridge_config/pending/links/ai_writes تحفظ تجزئة سر الجسر وطلبات التفويض المؤقتة وروابط حسابات مِداد المتعددة ومفاتيح منع تكرار الإنشاء. account_id UUID مستقل لكل حساب مفوض، المفتاح المركب يمنع تكرار نفس حساب مِداد لنفس هوية المكوّن. لا كلمات مرور أو JWTs محفوظة في هذه الجداول. source migrations بتاريخ 20261112.

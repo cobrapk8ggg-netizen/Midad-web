@@ -135,6 +135,16 @@ export function Account({
           <p className="muted">
             رواياتك تبقى خاصة. أنت تختار الفصول التي تنشرها من صفحة الرواية.
           </p>
+          {profile?.is_public && (
+            <a
+              className="profile-link"
+              target="_blank"
+              rel="noreferrer"
+              href={"/profile?username=" + encodeURIComponent(profile.username)}
+            >
+              افتح ملفي العام <ArrowLeft size={16} />
+            </a>
+          )}
           <button className="primary" disabled={busy}>
             {saved ? (
               <>
@@ -532,7 +542,19 @@ export function PublicReader() {
       ) : c ? (
         <>
           <p className="reader-author">
-            بقلم {novel?.author_name || "كاتب في مِداد"}
+            بقلم{" "}
+            {novel?.author_username ? (
+              <a
+                href={
+                  "/profile?username=" +
+                  encodeURIComponent(novel.author_username)
+                }
+              >
+                {novel.author_name || "كاتب في مِداد"}
+              </a>
+            ) : (
+              "كاتب في مِداد"
+            )}
           </p>
           <ChapterText title={c.title} scenes={[{ ...c, position: 0 }]} />
           <div className="reader-next">
@@ -553,6 +575,89 @@ export function PublicReader() {
         </>
       ) : (
         <p className="small-empty">لا توجد فصول منشورة متاحة هنا.</p>
+      )}
+    </main>
+  );
+}
+
+export function PublicProfile() {
+  const [profile, setProfile] = useState<{
+      username: string;
+      display_name: string;
+      bio: string;
+    } | null>(null),
+    [novels, setNovels] = useState<PublishedNovel[]>([]),
+    [ready, setReady] = useState(false),
+    [error, setError] = useState("");
+  useEffect(() => {
+    void (async () => {
+      const username =
+        new URLSearchParams(location.search).get("username") || "";
+      const [pr, ns] = await Promise.all([
+        supabase.rpc("midad_public_profile", { handle: username }),
+        supabase.rpc("midad_published_novels"),
+      ]);
+      if (pr.error) throw pr.error;
+      if (ns.error) throw ns.error;
+      setProfile(pr.data?.[0] || null);
+      setNovels(
+        (ns.data || []).filter(
+          (n: PublishedNovel) => n.author_username === username,
+        ),
+      );
+      setReady(true);
+    })().catch((e) => {
+      setError(errorMessage(e));
+      setReady(true);
+    });
+  }, []);
+  return (
+    <main className="collection public-profile">
+      <a className="profile-back" href="/">
+        مِداد <ArrowLeft size={17} />
+      </a>
+      {error ? (
+        <p role="alert">{error}</p>
+      ) : !ready ? (
+        <p>جارٍ فتح الملف…</p>
+      ) : profile ? (
+        <>
+          <header className="public-profile-heading glass">
+            <div className="profile-avatar">
+              <UserRound size={32} />
+            </div>
+            <p className="eyebrow" dir="ltr">
+              @{profile.username}
+            </p>
+            <h1>{profile.display_name}</h1>
+            <p>{profile.bio || "كاتب في مِداد"}</p>
+          </header>
+          <h2>روايات اختار الكاتب نشرها</h2>
+          <div className="reading-grid">
+            {novels.map((n) => (
+              <a
+                className="reading-card glass"
+                key={n.id}
+                href={"/read?novel=" + n.id}
+              >
+                <BookOpen size={28} />
+                <h2>{n.title}</h2>
+                <p>{n.description}</p>
+                <span>{n.chapter_count} فصل للقراءة</span>
+                <ArrowLeft size={18} />
+              </a>
+            ))}
+          </div>
+          {!novels.length && (
+            <p className="muted">لم ينشر الكاتب فصولًا للقراءة العامة بعد.</p>
+          )}
+        </>
+      ) : (
+        <div className="small-empty">
+          <UserRound size={35} />
+          <h1>لا يوجد ملف عام متاح.</h1>
+          <p>قد يكون صاحب الحساب اختار إبقاء ملفه خاصًا.</p>
+        </div>
       )}
     </main>
   );

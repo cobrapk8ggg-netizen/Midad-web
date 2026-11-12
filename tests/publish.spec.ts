@@ -42,6 +42,7 @@ test("authentication error, notes CRUD, verified download and import preview", a
     .click();
   await page.getByLabel("التفاصيل", { exact: true }).fill("فكرة بعد التحرير");
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(
     page.getByText("فكرة بعد التحرير", { exact: true }),
   ).toBeVisible();

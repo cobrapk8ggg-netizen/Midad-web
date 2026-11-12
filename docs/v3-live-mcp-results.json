@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-12",
+  "transport": "Actual ChatGPT plugin tools → private Sites MCP → Supabase Edge gateway → PostgreSQL",
+  "accountConsentCompletedByUser": true,
+  "midadEmailDifferentFromChatGPT": true,
+  "listAccounts": true,
+  "listExistingNovelsAndChapters": true,
+  "createIsolatedTestNovel": true,
+  "createChapter": true,
+  "readArabicParagraphsBack": true,
+  "saveExpectedVersion0": true,
+  "readUpdatedVersion1": true,
+  "staleVersion0Rejected": true,
+  "previousRevisionProtected": true,
+  "testNovelAndChildrenDeletedAfterTest": true,
+  "testIdempotencyRecordsDeleted": true,
+  "existingUserContentModified": false,
+  "personalAccountIdentifiersOmitted": true
+}
