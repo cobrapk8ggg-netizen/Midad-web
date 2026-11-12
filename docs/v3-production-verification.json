@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-12",
+  "url": "https://midad-writing.vercel.app",
+  "deployment_id": "dpl_F7AvpM4QsjRoJ7Q3jJ6rnG5FW2La",
+  "runtime_commit": "4f7674605fb60d44460b9e78a058c7afa711bcb4",
+  "deployment_state": "READY",
+  "directNovelStoryChapterAndOptionalScenes": "passed on production",
+  "responsiveDesktopIPadPhone": "passed on production; Chromium emulation",
+  "profilePublicProfileInvitationReaderEditorSave": "passed on production",
+  "publishReadAnonymouslyUnpublish": "passed on production",
+  "logoutLoginReadCoauthorText": "passed on production",
+  "independentMidadLoginConsentAndAccountSwitch": "passed on production",
+  "mcpRealUserReadCreateSaveReadbackStaleProtection": "passed through actual ChatGPT tools",
+  "coreProductionSignupGuestTransferSaveReload": "passed before final patch; see v2-production-results.json",
+  "productionBrowserTests": "3 passed across final verification and targeted rerun",
+  "targetedRerunReason": "Textarea with existing defaultValue required role-based accessible selector; assertion preserved",
+  "knownFinalQaAccountsDeleted": 4,
+  "realUserOriginalContentModified": false,
+  "privateUserDataInReport": false
+}

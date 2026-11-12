@@ -167,7 +167,7 @@ test("real profiles, invitation, friend reading and coauthor save, explicit publ
     .getByLabel("اسم المستخدم — لإضافتك إلى رواية")
     .fill("writer_" + suffix);
   await a
-    .getByLabel("عنّي", { exact: true })
+    .getByRole("textbox", { name: "عنّي", exact: true })
     .fill("كاتب عربي يشارك رواياته مع القراء.");
   await a.getByLabel("إظهار ملفي للقراء داخل المنصة").check();
   await a

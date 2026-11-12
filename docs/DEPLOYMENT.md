@@ -18,3 +18,5 @@
 MCP خاص: https://midad-chatgpt-writer.carefreepeach1.chatgpt.site/mcp . Sites version 2، source commit `a5c22e9`، 10 أدوات. سر MIDAD_BRIDGE_KEY داخل إعدادات خادم Sites فقط؛ Gateway يستخدم Supabase runtime secret المدمج، ولا يوجد secret في GitHub. رابط الدخول إلى Sites يثبت هوية مستخدم المكوّن فقط؛ ربط حساب الموقع وصلاحياته يحدث عبر /connect.
 
 التحقق النهائي المحلي للتصحيح: 10/10 Playwright، 5/5 Vitest، 40/40 API. نُشر ملف الكاتب العام والتصحيحات بعد هذه الفحوص. آخر SHA ورابط النشر يثبتان من بيانات Vercel والأدلة المرفقة عند الإصدار.
+
+الإصدار التصحيحي النهائي READY: `4f7674605fb60d44460b9e78a058c7afa711bcb4` / `dpl_F7AvpM4QsjRoJ7Q3jJ6rnG5FW2La`. رابط الإنتاج https://midad-writing.vercel.app . تحقق V3 على الإنتاج في v3-production-verification.json؛ التعديلات اللاحقة في Git توثيق ولقطات ومحدد اختبار فقط، دون تغيير كود التطبيق.
