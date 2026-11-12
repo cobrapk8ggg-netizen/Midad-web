@@ -144,7 +144,7 @@ const Writer = forwardRef<
     editorProps: {
       attributes: {
         dir: "rtl",
-        "aria-label": "نص المشهد",
+        "aria-label": "نص الفصل",
         role: "textbox",
         "aria-multiline": "true",
         spellcheck: "true",

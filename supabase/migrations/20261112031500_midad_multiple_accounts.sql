@@ -1,0 +1,20 @@
+alter table midad_private.bridge_links drop constraint bridge_links_pkey;
+alter table midad_private.bridge_links add column account_id uuid not null default gen_random_uuid();
+alter table midad_private.bridge_links add column label text not null default 'حساب مِداد';
+alter table midad_private.bridge_links add primary key(bridge_id,subject,user_id);
+alter table midad_private.bridge_links add unique(account_id);
+drop function public.midad_bridge_identity(text,text);
+create function public.midad_bridge_accounts(secret_hash text,subject_id text) returns table(account_id uuid,label text,project_id uuid,allow_write boolean) language sql stable security definer set search_path='' as $$select l.account_id,l.label,l.project_id,l.allow_write from midad_private.bridge_links l join midad_private.bridge_config c on c.id=l.bridge_id where c.secret_hash=midad_bridge_accounts.secret_hash and l.subject=subject_id order by l.created_at$$;
+create function public.midad_bridge_identity(secret_hash text,subject_id text,account_id uuid) returns table(user_id uuid,project_id uuid,allow_write boolean) language sql stable security definer set search_path='' as $$select l.user_id,l.project_id,l.allow_write from midad_private.bridge_links l join midad_private.bridge_config c on c.id=l.bridge_id where c.secret_hash=midad_bridge_identity.secret_hash and l.subject=subject_id and l.account_id=midad_bridge_identity.account_id$$;
+drop function public.midad_bridge_authorize(text,uuid,boolean);
+create function public.midad_bridge_authorize(request_nonce text,novel_id uuid,write_access boolean,account_label text default 'حساب مِداد') returns boolean language plpgsql security definer set search_path='' as $$declare p midad_private.bridge_pending;begin
+ if auth.uid() is null then raise exception 'login_required';end if;
+ select * into p from midad_private.bridge_pending where nonce=request_nonce and not used and expires_at>now() for update;
+ if p.nonce is null then raise exception 'link_expired';end if;
+ if novel_id is not null and not exists(select 1 from public.midad_projects where id=novel_id and user_id=auth.uid()) then raise exception 'not_owner';end if;
+ insert into midad_private.bridge_links(bridge_id,subject,user_id,project_id,allow_write,label) values(p.bridge_id,p.subject,auth.uid(),novel_id,write_access,coalesce(nullif(left(trim(account_label),80),''),'حساب مِداد')) on conflict(bridge_id,subject,user_id) do update set project_id=excluded.project_id,allow_write=excluded.allow_write,label=excluded.label;
+ update midad_private.bridge_pending set used=true where nonce=request_nonce;return true;end$$;
+revoke all on function public.midad_bridge_accounts(text,text),public.midad_bridge_identity(text,text,uuid) from public,anon,authenticated;
+grant execute on function public.midad_bridge_accounts(text,text),public.midad_bridge_identity(text,text,uuid) to service_role;
+revoke all on function public.midad_bridge_authorize(text,uuid,boolean,text) from public,anon;
+grant execute on function public.midad_bridge_authorize(text,uuid,boolean,text) to authenticated;

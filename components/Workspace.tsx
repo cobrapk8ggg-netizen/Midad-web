@@ -54,9 +54,9 @@ export default function Workspace({
     view === "world" ? "entities" : view === "notes" ? "notes" : "events";
   const title =
     view === "world"
-      ? "دليل العالم"
+      ? "الشخصيات والأماكن"
       : view === "notes"
-        ? "أفكار على الهامش"
+        ? "ملاحظاتي"
         : "خيوط الحكاية";
   const itemLabel =
     view === "world"
@@ -117,7 +117,7 @@ export default function Workspace({
           <h1>{title}</h1>
           <p className="muted">
             {view === "world"
-              ? "شخصيات لها حياة. أماكن لها ذاكرة."
+              ? "مرجع اختياري لتفاصيل روايتك: أضف اسم الشخصية ووصفها لتتذكّر مظهرها ودوافعها، أو مكانًا تقع فيه الأحداث."
               : view === "notes"
                 ? "لا تترك فكرة جيدة تفلت منك."
                 : "من الفكرة الأولى إلى المشهد الأخير."}

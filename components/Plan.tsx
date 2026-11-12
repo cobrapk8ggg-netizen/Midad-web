@@ -161,9 +161,10 @@ export default function Plan({
       <div className="collection-heading">
         <div>
           <span className="eyebrow">كل خيط يجد طريقه إلى الحكاية</span>
-          <h1>هندسة الاحتمالات.</h1>
+          <h1>أحداث الرواية</h1>
           <p className="muted">
-            خطّط للأقواس، واربط الأحداث بالمشاهد التي تحققها.
+            ابدأ بحدث: ماذا سيحدث في روايتك؟ رتّبه هنا ثم انقله إلى «قيد الكتابة»
+            أو «مكتمل». خطوط الأحداث اختيارية لتجميع مشكلة أو رحلة مشتركة.
           </p>
         </div>
         <button
@@ -182,7 +183,7 @@ export default function Plan({
           className={mode === "board" ? "active" : ""}
           onClick={() => setMode("board")}
         >
-          لوحة الحبكة
+          ترتيب الأحداث
         </button>
         <button
           className={mode === "timeline" ? "active" : ""}
@@ -194,7 +195,7 @@ export default function Plan({
           className={mode === "arcs" ? "active" : ""}
           onClick={() => setMode("arcs")}
         >
-          الأقواس السردية
+          خطوط الأحداث
         </button>
       </div>
       {mode === "board" ? (
@@ -202,7 +203,7 @@ export default function Plan({
           {[
             { id: "idea", title: "بذرة الحكاية" },
             { id: "draft", title: "قيد الكتابة" },
-            { id: "done", title: "اكتمل المشهد" },
+            { id: "done", title: "حدث مكتمل" },
           ].map((col) => (
             <section
               key={col.id}
@@ -245,7 +246,7 @@ export default function Plan({
               }}
             >
               <Plus size={16} />
-              قوس جديد
+              خط أحداث جديد
             </button>
           </div>
           <div className="entity-grid">
@@ -276,7 +277,7 @@ export default function Plan({
                     تحرير
                   </button>
                   <button
-                    aria-label={"حذف القوس " + a.title}
+                    aria-label={"حذف خط الأحداث " + a.title}
                     onClick={() => void del("arcs", a.id)}
                   >
                     <Trash2 size={14} />
@@ -302,7 +303,7 @@ export default function Plan({
             {modal === "arcs" ? (
               <>
                 <Field
-                  label="الهدف السردي"
+                  label="ما الهدف من هذا الخط؟"
                   name="goal"
                   defaultValue={edit && "goal" in edit ? edit.goal : ""}
                 />
@@ -337,9 +338,9 @@ export default function Plan({
                   placeholder="2040-03-21"
                 />
                 <label className="field">
-                  القوس السردي
+                  خط الأحداث (اختياري)
                   <select
-                    aria-label="القوس السردي"
+                    aria-label="خط الأحداث (اختياري)"
                     name="arc_id"
                     defaultValue={
                       edit && "arc_id" in edit ? edit.arc_id || "" : ""
@@ -354,9 +355,9 @@ export default function Plan({
                   </select>
                 </label>
                 <label className="field">
-                  المشهد المرتبط
+                  جزء الفصل المرتبط (اختياري)
                   <select
-                    aria-label="المشهد المرتبط"
+                    aria-label="جزء الفصل المرتبط (اختياري)"
                     name="scene_id"
                     defaultValue={
                       edit && "scene_id" in edit ? edit.scene_id || "" : ""

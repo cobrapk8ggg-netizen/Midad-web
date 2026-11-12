@@ -1,5 +1,8 @@
 import type { JSONContent } from "@tiptap/react";
 export type Project = {
+  user_id?: string;
+  story?: string;
+  access_role?: "owner" | "reader" | "editor";
   cover_path?: string | null;
   id: string;
   title: string;
@@ -15,6 +18,7 @@ export type Book = {
   position: number;
 };
 export type Chapter = {
+  writing_mode?: "continuous" | "scenes";
   draft_id?: string | null;
   id: string;
   title: string;

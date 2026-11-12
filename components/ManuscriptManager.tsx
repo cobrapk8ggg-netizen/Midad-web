@@ -77,22 +77,24 @@ export default function ManuscriptManager({
     <div className="manuscript-manager">
       {books.map((b) => (
         <section key={b.id}>
-          <div className="manager-row book-manager-row">
-            <strong>{b.title}</strong>
-            <button
-              aria-label={"تسمية الكتاب " + b.title}
-              onClick={() => setEdit({ table: "books", ...b })}
-            >
-              <Pencil size={15} />
-            </button>
-            <button
-              disabled={busy}
-              aria-label={"حذف الكتاب " + b.title}
-              onClick={() => void del("books", b.id)}
-            >
-              <Trash2 size={15} />
-            </button>
-          </div>
+          {books.length > 1 && (
+            <div className="manager-row book-manager-row">
+              <strong>{b.title}</strong>
+              <button
+                aria-label={"تسمية الكتاب " + b.title}
+                onClick={() => setEdit({ table: "books", ...b })}
+              >
+                <Pencil size={15} />
+              </button>
+              <button
+                disabled={busy}
+                aria-label={"حذف الكتاب " + b.title}
+                onClick={() => void del("books", b.id)}
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          )}
           {chapters
             .filter((c) => c.book_id === b.id)
             .map((c) => (

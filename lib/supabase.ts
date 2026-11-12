@@ -23,13 +23,50 @@ export async function list<T>(
   for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
   const { data, error } = await q;
   if (error) throw error;
+  if (table === "projects") {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const memberships = await supabase
+      .from("midad_members")
+      .select("project_id,role")
+      .eq("member_id", session?.user.id || "");
+    if (memberships.error) throw memberships.error;
+    return data.map((p) => ({
+      ...p,
+      access_role:
+        p.user_id === session?.user.id
+          ? "owner"
+          : memberships.data.find((m) => m.project_id === p.id)?.role ||
+            "reader",
+    })) as T[];
+  }
   return data as T[];
 }
 export async function insert<T>(table: string, value: object): Promise<T> {
   if (isGuestActive()) return guestInsert<T>(table, value);
+  // Coauthors write under the novel owner; RLS validates the entire parent chain.
+  let payload = value as Record<string, unknown>;
+  const parent =
+    table === "chapters"
+      ? ["books", "book_id"]
+      : table === "scenes"
+        ? ["chapters", "chapter_id"]
+        : ["revisions", "annotations"].includes(table)
+          ? ["scenes", "scene_id"]
+          : null;
+  if (parent && payload[parent[1]]) {
+    const r = await supabase
+      .from("midad_" + parent[0])
+      .select("user_id")
+      .eq("id", payload[parent[1]] as string)
+      .single();
+    if (r.error) throw r.error;
+    payload = { ...payload, user_id: r.data.user_id };
+  }
   const { data, error } = await supabase
     .from(`midad_${table}`)
-    .insert(value)
+    .insert(payload)
     .select()
     .single();
   if (error) throw error;
@@ -68,10 +105,17 @@ export async function saveScene(
 export async function transferGuestToAccount() {
   const rows = await guestExport();
   const columns: Record<string, string[]> = {
-    projects: ["id", "title", "description", "goal"],
+    projects: ["id", "title", "description", "story", "goal"],
     books: ["id", "project_id", "title", "position"],
     drafts: ["id", "book_id", "title"],
-    chapters: ["draft_id", "id", "book_id", "title", "position"],
+    chapters: [
+      "draft_id",
+      "id",
+      "book_id",
+      "title",
+      "position",
+      "writing_mode",
+    ],
     scenes: [
       "id",
       "chapter_id",

@@ -11,3 +11,9 @@ components/Auth للمصادقة؛ Midad ينسق المكتبة والكتاب�
 طبقة البيانات تختار بين Supabase وIndexedDB وفق actor صريح. الضيف ليس جلسة Supabase مزيفة. lib/guest stores صفوفًا منفصلة وفهرس table ومعاملات atomic للحفظ والإصدارات؛ lib/portable ينشئ نسخًا قابلة للنقل ويتحقق من الروابط ويعيد المعرفات عند الاستعادة. نقل الضيف إلى الحساب idempotent مع حفظ المصدر المحلي.
 Auth ينشئ الحساب عبر Edge Function محددة للمنتج تستخدم admin.createUser(email_confirm:true) ثم دخول Supabase العادي. لا مفاتيح privileged في العميل ولا تغيير لإعداد Auth المشترك. المكونات الجديدة منفصلة: Plan، Relationships، Sprint، Annotations، ManuscriptManager، ProjectSettings، BackupManager، Assets وProjectSearch.
 المسودات تربط chapters بـdraft_id؛ null تعني الأصل. نسخ المسودة يعيد معرّفات المشاهد والحواشي ويحافظ على النص الأصلي. assets في bucket خاصة مع روابط موقعة لعشر دقائق.
+
+## V3 — النموذج الذي يراه الكاتب
+
+المكتبة → الرواية → القصة والفصول. book container داخلي يُنشأ تلقائيًا للتوافق مع البيانات السابقة. المستند الداخلي scene في الفصل المستمر لا يظهر كمتطلب أو كيان إضافي. writing_mode يميز الفصل الكامل من الفصل المقسم اختياريًا إلى مشاهد. القراءة والتصدير يرتبان الأجزاء داخل الفصل.
+
+`NovelHome`, `Platform`, و`Connect` تفصل قصة الرواية والمشاركة والملفات وصفحة الموافقة عن منطق محرر Tiptap. ربط ChatGPT خدمة MCP خاصة مستقلة على Sites، والواجهة الرئيسية باقية على Vercel. التفاصيل في GPT_CONNECTION.md.

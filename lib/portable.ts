@@ -1,9 +1,9 @@
-import { list, insert, remove } from "./supabase";
+import { supabase, list, insert, remove } from "./supabase";
 export const portableFields: Record<string, string[]> = {
-  projects: ["title", "description", "goal"],
+  projects: ["title", "description", "story", "goal"],
   books: ["project_id", "title", "position"],
   drafts: ["book_id", "title"],
-  chapters: ["draft_id", "book_id", "title", "position"],
+  chapters: ["draft_id", "book_id", "title", "position", "writing_mode"],
   scenes: [
     "chapter_id",
     "title",
@@ -50,18 +50,23 @@ export type Backup = {
   rows: Row[];
 };
 export async function createBackup(): Promise<Backup> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const rows = (
     await Promise.all(
       Object.keys(portableFields).map(async (table) =>
-        (await list<Record<string, unknown>>(table)).map((row) => ({
-          id: String(row.id),
-          _table: table,
-          ...Object.fromEntries(
-            portableFields[table]
-              .filter((k) => row[k] !== undefined)
-              .map((k) => [k, row[k]]),
-          ),
-        })),
+        (await list<Record<string, unknown>>(table))
+          .filter((row) => !row.user_id || row.user_id === session?.user.id)
+          .map((row) => ({
+            id: String(row.id),
+            _table: table,
+            ...Object.fromEntries(
+              portableFields[table]
+                .filter((k) => row[k] !== undefined)
+                .map((k) => [k, row[k]]),
+            ),
+          })),
       ),
     )
   ).flat();
@@ -139,6 +144,16 @@ export async function restoreBackup(backup: Backup) {
               .map((k) => [k, remap(row[k])]),
           ),
         };
+        if (
+          table === "chapters" &&
+          !(value as Record<string, unknown>).writing_mode
+        )
+          (value as Record<string, unknown>).writing_mode =
+            backup.rows.filter(
+              (r) => r._table === "scenes" && r.chapter_id === row.id,
+            ).length > 1
+              ? "scenes"
+              : "continuous";
         await insert(table, value);
         if (table === "projects") created.push(value.id);
       }

@@ -25,6 +25,7 @@ test("authentication error, notes CRUD, verified download and import preview", a
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await page.getByRole("button", { name: "ملاحظات الرواية" }).click();
   await page.getByRole("button", { name: "ملاحظة جديدة", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("ملاحظة الاختبار");
@@ -44,11 +45,14 @@ test("authentication error, notes CRUD, verified download and import preview", a
   await expect(
     page.getByText("فكرة بعد التحرير", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "التصدير", exact: true }).click();
+  await page.getByRole("button", { name: "لوحة الأوامر", exact: true }).click();
+  await page
+    .getByRole("button", { name: "التصدير والاستيراد", exact: true })
+    .click();
   await page.screenshot({ path: "docs/screenshots/publish.png" });
   await page.getByLabel("تنسيق الملف").selectOption("epub");
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "تنزيل المخطوطة" }).click();
+  await page.getByRole("button", { name: "تنزيل الرواية" }).click();
   const download = await downloadPromise;
   const bytes = fs.readFileSync((await download.path())!);
   const zip = unzipSync(bytes);
@@ -62,5 +66,5 @@ test("authentication error, notes CRUD, verified download and import preview", a
     "رسالة عربية جديدة",
   );
   await page.getByRole("button", { name: "إضافة النص إلى الرواية" }).click();
-  await expect(page.getByRole("status")).toContainText("أُضيف النص");
+  await expect(page.getByRole("status")).toContainText("أُضيف فصل جديد");
 });

@@ -16,14 +16,15 @@ async function login(page: any) {
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
-  await expect(page.getByRole("textbox", { name: "نص المشهد" })).toBeVisible();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "نص الفصل" })).toBeVisible();
 }
 test("offline draft survives reload and history restores protected current version", async ({
   page,
   context,
 }) => {
   await login(page);
-  const editor = page.getByRole("textbox", { name: "نص المشهد" });
+  const editor = page.getByRole("textbox", { name: "نص الفصل" });
   await editor.press("ControlOrMeta+End");
   await editor.press("Enter");
   await editor.pressSequentially("نسخة قبل الانقطاع");
@@ -44,7 +45,8 @@ test("offline draft survives reload and history restores protected current versi
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
-  await expect(page.getByRole("textbox", { name: "نص المشهد" })).toBeVisible();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "نص الفصل" })).toBeVisible();
   const restore = page.getByRole("button", {
     name: "استعادة المسودة",
     exact: true,
@@ -82,8 +84,9 @@ test("second tab edit is rejected without overwriting newer manuscript", async (
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
-  const e1 = page.getByRole("textbox", { name: "نص المشهد" }),
-    e2 = second.getByRole("textbox", { name: "نص المشهد" });
+  await second.getByRole("button", { name: "الكتابة", exact: true }).click();
+  const e1 = page.getByRole("textbox", { name: "نص الفصل" }),
+    e2 = second.getByRole("textbox", { name: "نص الفصل" });
   await expect(e2).toBeVisible();
   await e1.press("ControlOrMeta+End");
   await e1.press("Enter");
@@ -103,6 +106,7 @@ test("second tab edit is rejected without overwriting newer manuscript", async (
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(e1).toContainText("النص الأحدث من الجلسة الأولى");
   await expect(e1).not.toContainText("تعديل الجلسة الثانية المتأخر");
 });

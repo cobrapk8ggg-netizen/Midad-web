@@ -114,7 +114,7 @@ export default function ProjectSearch({
     <section className="project-search">
       <h3>داخل روايتك</h3>
       {loading ? (
-        <p>جارٍ البحث في المخطوطة…</p>
+        <p>جارٍ البحث في الرواية…</p>
       ) : !results.length ? (
         <p>لا نتائج لهذا النص.</p>
       ) : (

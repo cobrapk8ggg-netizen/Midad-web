@@ -28,6 +28,9 @@ import {
   Pencil,
   Upload,
   Check,
+  Users,
+  UserRound,
+  Eye,
 } from "lucide-react";
 import { supabase, list, insert, update, remove } from "../lib/supabase";
 import type { Project, Book, Chapter, Scene, Revision } from "../lib/types";
@@ -36,6 +39,8 @@ import { Brand, Dialog, Field, errorMessage } from "./ui";
 import Auth from "./Auth";
 import Writer, { type WriterHandle } from "./Writer";
 import Workspace from "./Workspace";
+import NovelHome from "./NovelHome";
+import { Account, Community, ChapterText } from "./Platform";
 import LiquidSculpture from "./LiquidSculpture";
 import { setGuestActive, guestList } from "../lib/guest";
 import { transferGuestToAccount } from "../lib/supabase";
@@ -251,13 +256,25 @@ export default function Midad() {
   async function openProject(p: Project) {
     if (!(await guard())) return;
     await run(async () => {
-      const bs = (await list<Book>("books", { project_id: p.id })).sort(
+      let bs = (await list<Book>("books", { project_id: p.id })).sort(
         (a, b) => a.position - b.position,
       );
+      if (
+        !bs.length &&
+        p.access_role !== "reader" &&
+        p.access_role !== "editor"
+      )
+        bs = [
+          await insert<Book>("books", {
+            project_id: p.id,
+            title: p.title,
+            position: 0,
+          }),
+        ];
       setProject(p);
       setBooks(bs);
-      setView("write");
-      if (bs[0]) await loadBook(bs[0]);
+      setView("novel");
+      if (bs[0]) await loadBook(bs[0], null);
       else {
         setBook(null);
         setChapters([]);
@@ -307,15 +324,17 @@ export default function Midad() {
           draft_id: draftId,
           title,
           position: chapters.length,
+          writing_mode: f.get("useScenes") === "on" ? "scenes" : "continuous",
         });
         setChapters((x) => [...x, c]);
         const s = await insert<Scene>("scenes", {
           chapter_id: c.id,
-          title: "المشهد الأول",
+          title: f.get("useScenes") === "on" ? "المشهد الأول" : title,
           position: 0,
         });
         setScenes((x) => [...x, s]);
         setScene(s);
+        setView("write");
       } else if (modal.startsWith("scene:")) {
         const s = await insert<Scene>("scenes", {
           chapter_id: modal.slice(6),
@@ -325,6 +344,13 @@ export default function Midad() {
         setScenes((x) => [...x, s]);
         setScene(s);
       } else if (modal === "rename" && scene) {
+        const c = chapters.find((c) => c.id === scene.chapter_id);
+        if (c?.writing_mode !== "scenes") {
+          await update("chapters", scene.chapter_id, { title });
+          setChapters((xs) =>
+            xs.map((x) => (x.id === scene.chapter_id ? { ...x, title } : x)),
+          );
+        }
         await update("scenes", scene.id, { title });
         setScene({ ...scene, title });
         setScenes((x) =>
@@ -385,6 +411,10 @@ export default function Midad() {
         }}
       />
     );
+  const owner =
+    !project ||
+    (project.access_role !== "reader" && project.access_role !== "editor");
+  const canWrite = project?.access_role !== "reader";
   const total = scenes.reduce((sum, s) => sum + countWords(s.plain_text), 0);
   const currentChapter = chapters.find((c) => c.id === scene?.chapter_id);
   const last = projects.find(
@@ -417,10 +447,18 @@ export default function Midad() {
           </button>
           {project &&
             [
-              { v: "write", l: "الكتابة", i: Feather },
-              { v: "plan", l: "التخطيط", i: Waypoints },
-              { v: "world", l: "العالم", i: Globe },
-              { v: "publish", l: "التصدير", i: Download },
+              { v: "novel", l: "روايتي", i: BookOpen },
+              {
+                v: "write",
+                l: canWrite ? "الكتابة" : "قراءة الفصول",
+                i: Feather,
+              },
+              ...(owner
+                ? [
+                    { v: "plan", l: "الأحداث", i: Waypoints },
+                    { v: "world", l: "الشخصيات", i: Users },
+                  ]
+                : []),
             ].map((n) => (
               <button
                 key={n.v}
@@ -431,6 +469,22 @@ export default function Midad() {
                 {n.l}
               </button>
             ))}
+          <button
+            className={view === "community" ? "active" : ""}
+            onClick={() => void navigate("community")}
+          >
+            <BookOpen size={17} />
+            للقراءة
+          </button>
+          {!guest && (
+            <button
+              className={view === "account" ? "active" : ""}
+              onClick={() => void navigate("account")}
+            >
+              <UserRound size={17} />
+              حسابي
+            </button>
+          )}
         </nav>
         <div className="top-actions">
           <button
@@ -593,7 +647,13 @@ export default function Midad() {
                       className={"book-cover cover-" + (i % 3)}
                       onClick={() => void openProject(p)}
                     >
-                      <span className="cover-kicker">مخطوطة أدبية</span>
+                      <span className="cover-kicker">
+                        {p.access_role === "editor"
+                          ? "نكتبها معًا"
+                          : p.access_role === "reader"
+                            ? "شاركها معي صديق"
+                            : "رواية"}
+                      </span>
                       <PrivateImage path={p.cover_path} className="cover-art" />
                       <div className="cover-geometry" aria-hidden="true" />
                       <span className="cover-title">{p.title}</span>
@@ -603,12 +663,14 @@ export default function Midad() {
                       <button onClick={() => void openProject(p)}>
                         <h3>{p.title}</h3>
                       </button>
-                      <button
-                        aria-label={"حذف " + p.title}
-                        onClick={() => setModal("delete-project:" + p.id)}
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
+                      {(p.access_role === "owner" || !p.access_role) && (
+                        <button
+                          aria-label={"حذف " + p.title}
+                          onClick={() => setModal("delete-project:" + p.id)}
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
+                      )}
                     </div>
                     <p className="muted">
                       {p.description || "مساحة لعالم جديد"}
@@ -635,15 +697,89 @@ export default function Midad() {
             <span>MIDAD — A SPACE FOR STORIES</span>
           </footer>
         </main>
+      ) : view === "account" && !guest ? (
+        <Account userId={user.id} onError={setError} />
+      ) : view === "community" ? (
+        <Community />
+      ) : project && view === "novel" ? (
+        <NovelHome
+          key={project.id}
+          project={project}
+          chapters={chapters}
+          scenes={scenes}
+          guest={guest}
+          onError={setError}
+          onSaved={(p) => {
+            setProject(p);
+            setProjects((xs) => xs.map((x) => (x.id === p.id ? p : x)));
+          }}
+          onCreate={() => setModal("chapter")}
+          onChapter={(c) =>
+            void run(async () => {
+              if (!(await guard())) return;
+              let next = scenes.find((s) => s.chapter_id === c.id);
+              if (!next && canWrite) {
+                next = await insert<Scene>("scenes", {
+                  chapter_id: c.id,
+                  title: c.title,
+                  position: 0,
+                });
+                setScenes((xs) => [...xs, next!]);
+              }
+              setScene(next || null);
+              setView("write");
+            })
+          }
+          onNavigate={(v) => void navigate(v)}
+          onSettings={() => setModal("project-settings")}
+          onManage={() => setModal("manage-manuscript")}
+        />
+      ) : project && view === "write" && !canWrite ? (
+        <main className="shared-reader">
+          <div className="section-heading">
+            <button onClick={() => void navigate("novel")}>
+              <ArrowRight size={17} />
+              الرواية
+            </button>
+            <label className="field">
+              الفصل
+              <select
+                aria-label="الفصل المقروء"
+                value={currentChapter?.id || ""}
+                onChange={(e) =>
+                  setScene(
+                    scenes.find((s) => s.chapter_id === e.target.value) || null,
+                  )
+                }
+              >
+                {chapters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {currentChapter ? (
+            <ChapterText
+              title={currentChapter.title}
+              scenes={scenes.filter((s) => s.chapter_id === currentChapter.id)}
+            />
+          ) : (
+            <p>لا يوجد نص لقراءته بعد.</p>
+          )}
+        </main>
       ) : project && view === "write" ? (
         <main className="writing">
           <div className="workspace-heading">
             <div className="breadcrumbs">
               <button onClick={() => void navigate("library")}>المكتبة</button>
               <span>/</span>
-              <span>{project.title}</span>
+              <button onClick={() => void navigate("novel")}>
+                {project.title}
+              </button>
               <span>/</span>
-              <span>{currentChapter?.title || "المخطوطة"}</span>
+              <span>{currentChapter?.title || "الفصول"}</span>
             </div>
             <div>
               <button
@@ -681,9 +817,9 @@ export default function Midad() {
             {binder && (
               <aside className="binder">
                 <div className="panel-title">
-                  <span>المخطوطة</span>
+                  <span>فصول الرواية</span>
                   <button
-                    aria-label="إدارة الكتب والفصول"
+                    aria-label="إدارة الفصول"
                     onClick={() =>
                       void run(async () => {
                         if (await guard()) setModal("manage-manuscript");
@@ -693,48 +829,54 @@ export default function Midad() {
                     <BookOpen size={16} />
                   </button>
                   <button
-                    aria-label="إضافة كتاب"
-                    onClick={() => setModal("book")}
+                    aria-label="العودة إلى الرواية"
+                    onClick={() => void navigate("novel")}
                   >
-                    <Plus size={17} />
+                    <ArrowRight size={17} />
                   </button>
                 </div>
-                <select
-                  aria-label="الكتاب الحالي"
-                  value={book?.id || ""}
-                  onChange={(e) => {
-                    const nextBook = e.currentTarget.value;
-                    void run(async () => {
-                      if (await guard())
-                        await loadBook(books.find((b) => b.id === nextBook)!);
-                    });
-                  }}
-                >
-                  <option value="" disabled>
-                    اختر كتابًا
-                  </option>
-                  {books.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.title}
-                    </option>
-                  ))}
-                </select>
-                {book && (
-                  <div className="draft-picker">
+                {books.length > 1 && (
+                  <label className="field">
+                    جزء من الرواية
+                    <select
+                      value={book?.id || ""}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        void run(async () => {
+                          if (await guard())
+                            await loadBook(
+                              books.find((b) => b.id === id)!,
+                              null,
+                            );
+                        });
+                      }}
+                    >
+                      {books.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {owner && book && (
+                  <details className="advanced-drafts">
+                    <summary>نسخ بديلة للفصول (اختياري)</summary>
+                    <p className="muted">
+                      نسخة منفصلة لتجربة تغييرات دون تعديل الفصول الأصلية.
+                    </p>
                     <label className="field">
-                      المسودة
+                      النسخة
                       <select
-                        aria-label="المسودة الحالية"
                         value={draftId || ""}
                         onChange={(e) => {
-                          const nextDraft = e.currentTarget.value;
+                          const id = e.target.value;
                           void run(async () => {
-                            if (await guard())
-                              await loadBook(book, nextDraft || null);
+                            if (await guard()) await loadBook(book, id || null);
                           });
                         }}
                       >
-                        <option value="">المسودة الأصلية</option>
+                        <option value="">الفصول الأصلية</option>
                         {drafts.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.title}
@@ -742,98 +884,113 @@ export default function Midad() {
                         ))}
                       </select>
                     </label>
-                    <button
-                      aria-label="مسودة جديدة"
-                      onClick={() =>
-                        void run(async () => {
-                          if (await guard()) setModal("draft");
-                        })
-                      }
-                    >
-                      <Plus size={15} />
+                    <button onClick={() => setModal("draft")}>
+                      <Plus size={16} />
+                      نسخة بديلة جديدة
                     </button>
                     {draftId && (
-                      <button
-                        aria-label="حذف المسودة الحالية"
-                        onClick={() => setModal("delete-draft")}
-                      >
-                        <Trash2 size={14} />
+                      <button onClick={() => setModal("delete-draft")}>
+                        حذف النسخة البديلة
                       </button>
                     )}
-                  </div>
+                  </details>
                 )}
                 {chapters.map((c, i) => (
                   <section className="chapter" key={c.id}>
                     <div className="chapter-name">
                       <ChevronDown size={14} />
                       <span>{String(i + 1).padStart(2, "0")}</span>
-                      <strong>{c.title}</strong>
                       <button
-                        aria-label={"إضافة مشهد إلى " + c.title}
+                        className="chapter-open"
                         onClick={() =>
                           void run(async () => {
-                            if (await guard()) setModal("scene:" + c.id);
+                            if (!(await guard())) return;
+                            let next = scenes.find(
+                              (s) => s.chapter_id === c.id,
+                            );
+                            if (!next) {
+                              next = await insert<Scene>("scenes", {
+                                chapter_id: c.id,
+                                title: c.title,
+                                position: 0,
+                              });
+                              setScenes((xs) => [...xs, next!]);
+                            }
+                            setScene(next);
                           })
                         }
                       >
-                        <Plus size={15} />
+                        <strong>{c.title}</strong>
                       </button>
-                    </div>
-                    {scenes
-                      .filter((s) => s.chapter_id === c.id)
-                      .sort((a, b) => a.position - b.position)
-                      .map((s) => (
-                        <div
-                          className={
-                            "scene-row " +
-                            (scene?.id === s.id ? "selected" : "")
+                      {c.writing_mode === "scenes" && (
+                        <button
+                          aria-label={"إضافة مشهد إلى " + c.title}
+                          onClick={() =>
+                            void run(async () => {
+                              if (await guard()) setModal("scene:" + c.id);
+                            })
                           }
-                          key={s.id}
-                          draggable
-                          onDragStart={(e) =>
-                            e.dataTransfer.setData("text/plain", s.id)
-                          }
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            const from = scenes.find(
-                              (x) =>
-                                x.id === e.dataTransfer.getData("text/plain"),
-                            );
-                            if (from && from.chapter_id === s.chapter_id)
-                              void moveScene(
-                                from,
-                                from.position > s.position ? -1 : 1,
-                              );
-                          }}
                         >
-                          <button
-                            className="scene-open"
-                            onClick={() =>
-                              void run(async () => {
-                                if (await guard()) setScene(s);
-                              })
+                          <Plus size={15} />
+                        </button>
+                      )}
+                    </div>
+                    {c.writing_mode === "scenes" &&
+                      scenes
+                        .filter((s) => s.chapter_id === c.id)
+                        .sort((a, b) => a.position - b.position)
+                        .map((s) => (
+                          <div
+                            className={
+                              "scene-row " +
+                              (scene?.id === s.id ? "selected" : "")
                             }
+                            key={s.id}
+                            draggable
+                            onDragStart={(e) =>
+                              e.dataTransfer.setData("text/plain", s.id)
+                            }
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const from = scenes.find(
+                                (x) =>
+                                  x.id === e.dataTransfer.getData("text/plain"),
+                              );
+                              if (from && from.chapter_id === s.chapter_id)
+                                void moveScene(
+                                  from,
+                                  from.position > s.position ? -1 : 1,
+                                );
+                            }}
                           >
-                            <FileText size={14} />
-                            <span>{s.title}</span>
-                          </button>
-                          <button
-                            className="reorder"
-                            aria-label={"تقديم " + s.title}
-                            onClick={() => void moveScene(s, -1)}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            className="reorder"
-                            aria-label={"تأخير " + s.title}
-                            onClick={() => void moveScene(s, 1)}
-                          >
-                            ↓
-                          </button>
-                        </div>
-                      ))}
+                            <button
+                              className="scene-open"
+                              onClick={() =>
+                                void run(async () => {
+                                  if (await guard()) setScene(s);
+                                })
+                              }
+                            >
+                              <FileText size={14} />
+                              <span>{s.title}</span>
+                            </button>
+                            <button
+                              className="reorder"
+                              aria-label={"تقديم " + s.title}
+                              onClick={() => void moveScene(s, -1)}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              className="reorder"
+                              aria-label={"تأخير " + s.title}
+                              onClick={() => void moveScene(s, 1)}
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        ))}
                   </section>
                 ))}
                 {book && (
@@ -856,7 +1013,7 @@ export default function Midad() {
                   </div>
                 )}
                 <div className="binder-bottom">
-                  <span>{total.toLocaleString("ar")} كلمة في الكتاب</span>
+                  <span>{total.toLocaleString("ar")} كلمة في الرواية</span>
                   <progress value={total} max={project.goal} />
                   <small>
                     هدف الرواية: {project.goal.toLocaleString("ar")} كلمة
@@ -869,7 +1026,13 @@ export default function Midad() {
                 <Writer
                   key={scene.id}
                   ref={writer}
-                  scene={scene}
+                  scene={{
+                    ...scene,
+                    title:
+                      currentChapter?.writing_mode === "scenes"
+                        ? scene.title
+                        : currentChapter?.title || scene.title,
+                  }}
                   userId={user.id}
                   size={size}
                   font={font}
@@ -900,16 +1063,26 @@ export default function Midad() {
               <aside className="context-panel">
                 <div className="panel-title">
                   مساحة الحكاية{" "}
-                  <button
-                    aria-label="إعدادات الرواية"
-                    onClick={() => setModal("project-settings")}
-                  >
-                    <Settings size={16} />
-                  </button>
+                  {owner && (
+                    <button
+                      aria-label="إعدادات الرواية"
+                      onClick={() => setModal("project-settings")}
+                    >
+                      <Settings size={16} />
+                    </button>
+                  )}
                 </div>
                 <div className="context-block">
-                  <span className="eyebrow">المشهد الحالي</span>
-                  <h3>{scene?.title || "لم يُحدد مشهد"}</h3>
+                  <span className="eyebrow">
+                    {currentChapter?.writing_mode === "scenes"
+                      ? "المشهد الحالي"
+                      : "الفصل الحالي"}
+                  </span>
+                  <h3>
+                    {currentChapter?.writing_mode === "scenes"
+                      ? scene?.title
+                      : currentChapter?.title || "اختر فصلًا"}
+                  </h3>
                   {scene && (
                     <div className="inline-actions">
                       <button onClick={() => setModal("rename")}>
@@ -920,15 +1093,59 @@ export default function Midad() {
                         <History size={14} />
                         النسخ
                       </button>
-                      <button
-                        aria-label="حذف المشهد"
-                        onClick={() => setModal("delete-scene")}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {currentChapter?.writing_mode === "scenes" && (
+                        <button
+                          aria-label="حذف المشهد"
+                          onClick={() => setModal("delete-scene")}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
+                {currentChapter && (
+                  <div className="context-block">
+                    <button
+                      className="full"
+                      onClick={() =>
+                        void run(async () => {
+                          if (await guard()) setModal("read-chapter");
+                        })
+                      }
+                    >
+                      <Eye size={17} />
+                      معاينة الفصل كاملًا
+                    </button>
+                    {currentChapter.writing_mode !== "scenes" && (
+                      <button
+                        className="full"
+                        onClick={() =>
+                          void run(async () => {
+                            if (!(await guard())) return;
+                            await update("chapters", currentChapter.id, {
+                              writing_mode: "scenes",
+                            });
+                            setChapters((xs) =>
+                              xs.map((c) =>
+                                c.id === currentChapter.id
+                                  ? { ...c, writing_mode: "scenes" }
+                                  : c,
+                              ),
+                            );
+                            setModal("scene:" + currentChapter.id);
+                          })
+                        }
+                      >
+                        إضافة مشاهد (اختياري)
+                      </button>
+                    )}
+                    <small className="muted">
+                      المشاهد تقسيم داخلي فقط. القراءة والتصدير تجمعها كفصل
+                      واحد.
+                    </small>
+                  </div>
+                )}
                 <div className="context-block">
                   <span className="eyebrow">بيئة الكتابة</span>
                   <label className="field">
@@ -942,7 +1159,7 @@ export default function Midad() {
                     />
                   </label>
                   <label className="field">
-                    خط المخطوطة
+                    خط نص الرواية
                     <select
                       value={font}
                       onChange={(e) => setFont(e.target.value)}
@@ -976,28 +1193,32 @@ export default function Midad() {
                     />
                   </label>
                 </div>
-                <div className="context-block">
-                  <span className="eyebrow">عالمك قريب منك</span>
-                  <p className="muted">
-                    احتفظ بالشخصيات والأماكن والأفكار في متناول حكايتك.
-                  </p>
-                  <button
-                    className="full"
-                    onClick={() => void navigate("world")}
-                  >
-                    <Globe size={16} />
-                    فتح دليل العالم
-                    <ArrowLeft size={16} />
-                  </button>
-                  <button
-                    className="full"
-                    onClick={() => void navigate("notes")}
-                  >
-                    <FileText size={16} />
-                    ملاحظات الرواية
-                    <ArrowLeft size={16} />
-                  </button>
-                </div>
+                {owner && (
+                  <>
+                    <div className="context-block">
+                      <span className="eyebrow">عالمك قريب منك</span>
+                      <p className="muted">
+                        احتفظ بالشخصيات والأماكن والأفكار في متناول حكايتك.
+                      </p>
+                      <button
+                        className="full"
+                        onClick={() => void navigate("world")}
+                      >
+                        <Globe size={16} />
+                        الشخصيات والأماكن
+                        <ArrowLeft size={16} />
+                      </button>
+                      <button
+                        className="full"
+                        onClick={() => void navigate("notes")}
+                      >
+                        <FileText size={16} />
+                        ملاحظات الرواية
+                        <ArrowLeft size={16} />
+                      </button>
+                    </div>
+                  </>
+                )}
                 {scene && (
                   <Annotations
                     sceneId={scene.id}
@@ -1009,21 +1230,28 @@ export default function Midad() {
                     onError={setError}
                   />
                 )}
-                <Sprint
-                  key={book?.id}
-                  bookId={book?.id || ""}
-                  projectId={project.id}
-                  userId={user.id}
-                  getWords={() =>
-                    scenes
-                      .filter((s) => s.id !== scene?.id)
-                      .reduce((sum, s) => sum + countWords(s.plain_text), 0) +
-                    countWords(
-                      writer.current?.getText() || scene?.plain_text || "",
-                    )
-                  }
-                  onError={setError}
-                />
+                {owner && (
+                  <>
+                    <Sprint
+                      key={book?.id}
+                      bookId={book?.id || ""}
+                      projectId={project.id}
+                      userId={user.id}
+                      getWords={() =>
+                        scenes
+                          .filter((s) => s.id !== scene?.id)
+                          .reduce(
+                            (sum, s) => sum + countWords(s.plain_text),
+                            0,
+                          ) +
+                        countWords(
+                          writer.current?.getText() || scene?.plain_text || "",
+                        )
+                      }
+                      onError={setError}
+                    />
+                  </>
+                )}
                 <div className="quiet-quote">
                   «الكلمات تصنع عوالم
                   <br />
@@ -1033,7 +1261,7 @@ export default function Midad() {
             )}
           </div>
         </main>
-      ) : project && view === "plan" ? (
+      ) : project && owner && view === "plan" ? (
         <Plan
           projectId={project.id}
           onError={setError}
@@ -1043,7 +1271,7 @@ export default function Midad() {
             })
           }
         />
-      ) : project && view === "publish" ? (
+      ) : project && owner && view === "publish" ? (
         <Publish
           project={project}
           books={books}
@@ -1051,7 +1279,7 @@ export default function Midad() {
           initialBookId={book?.id}
           initialDraftId={draftId}
         />
-      ) : project ? (
+      ) : project && owner ? (
         <Workspace
           key={view + project.id}
           project={project}
@@ -1064,7 +1292,7 @@ export default function Midad() {
         <Dialog
           title={
             modal === "project"
-              ? "حكاية جديدة"
+              ? "رواية جديدة"
               : modal === "book"
                 ? "كتاب جديد"
                 : modal === "chapter"
@@ -1072,7 +1300,9 @@ export default function Midad() {
                   : modal === "draft"
                     ? "مسودة جديدة"
                     : modal === "rename"
-                      ? "تسمية المشهد"
+                      ? currentChapter?.writing_mode === "scenes"
+                        ? "تسمية المشهد"
+                        : "تسمية الفصل"
                       : "مشهد جديد"
           }
           onClose={() => setModal("")}
@@ -1083,9 +1313,26 @@ export default function Midad() {
               label="العنوان"
               name="title"
               maxLength={200}
-              defaultValue={modal === "rename" ? scene?.title : ""}
+              defaultValue={
+                modal === "rename"
+                  ? currentChapter?.writing_mode === "scenes"
+                    ? scene?.title
+                    : currentChapter?.title
+                  : ""
+              }
               required
             />
+            {modal === "chapter" && (
+              <>
+                <label className="check-field">
+                  <input type="checkbox" name="useScenes" />
+                  أريد تقسيم هذا الفصل إلى مشاهد (اختياري)
+                </label>
+                <p className="muted">
+                  اترك الخيار مغلقًا لتكتب الفصل كاملًا مباشرة.
+                </p>
+              </>
+            )}
             {modal === "draft" && (
               <label className="field">
                 محتوى المسودة
@@ -1106,7 +1353,7 @@ export default function Midad() {
         </Dialog>
       ) : null}
       {modal === "manage-manuscript" && project && (
-        <Dialog title="الكتب والفصول" onClose={() => setModal("")}>
+        <Dialog title="إدارة الفصول" onClose={() => setModal("")}>
           <ManuscriptManager
             projectId={project.id}
             onError={setError}
@@ -1150,7 +1397,7 @@ export default function Midad() {
             للعودة.
           </p>
           <label className="field">
-            حجم خط المخطوطة
+            حجم خط نص الرواية
             <input
               type="range"
               min="18"
@@ -1257,6 +1504,14 @@ export default function Midad() {
           )}
         </Dialog>
       )}
+      {modal === "read-chapter" && currentChapter && (
+        <Dialog title="معاينة الفصل كاملًا" onClose={() => setModal("")}>
+          <ChapterText
+            title={currentChapter.title}
+            scenes={scenes.filter((s) => s.chapter_id === currentChapter.id)}
+          />
+        </Dialog>
+      )}
       {modal === "history" && (
         <Dialog title="سجل النسخ" onClose={() => setModal("")}>
           <p className="muted">
@@ -1307,7 +1562,7 @@ export default function Midad() {
               ? "هذا المشهد وسجل نسخه"
               : modal === "delete-draft"
                 ? "هذه المسودة وفصولها ومشاهدها فقط"
-                : "المشروع وكل الكتب والفصول التابعة له"}
+                : "الرواية وكل الفصول التابعة لها"}
             . لا يمكن التراجع عن الحذف.
           </p>
           <button

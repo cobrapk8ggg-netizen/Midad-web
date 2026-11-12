@@ -36,19 +36,11 @@ test("Arabic author journey, revisions, offline recovery and responsive screens"
     .getByLabel("عن الحكاية (اختياري)")
     .fill("رواية عن الذاكرة والمدن التي تسكننا");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await expect(
-    page.getByRole("button", { name: "إنشاء كتاب", exact: true }).first(),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "إنشاء كتاب", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("العنوان", { exact: true }).fill("الكتاب الأول");
-  await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page.getByRole("button", { name: "إنشاء فصل", exact: true }).click();
+
+  await page.getByRole("button", { name: "فصل جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("حين نامت المدينة");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  const editor = page.getByRole("textbox", { name: "نص المشهد" });
+  const editor = page.getByRole("textbox", { name: "نص الفصل" });
   await expect(editor).toBeVisible();
   await page.screenshot({
     path: "docs/screenshots/editor-empty.png",
@@ -79,10 +71,11 @@ test("Arabic author journey, revisions, offline recovery and responsive screens"
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
-  await page.getByRole("button", { name: "إضافة كتاب" }).waitFor();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
+  await page.getByRole("button", { name: "إدارة الفصول" }).waitFor();
   await expect(editor).toContainText("المدينة");
   expect((await editor.innerText()).length).toBeGreaterThan(20000);
-  await page.getByRole("button", { name: "العالم", exact: true }).click();
+  await page.getByRole("button", { name: "الشخصيات", exact: true }).click();
   await page.getByRole("button", { name: "شخصية جديدة" }).click();
   await page.getByLabel("الاسم", { exact: true }).fill("ليلى");
   await page
@@ -93,7 +86,7 @@ test("Arabic author journey, revisions, offline recovery and responsive screens"
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
   await expect(page.getByRole("heading", { name: "ليلى" })).toBeVisible();
   await page.screenshot({ path: "docs/screenshots/world.png", fullPage: true });
-  await page.getByRole("button", { name: "التخطيط", exact: true }).click();
+  await page.getByRole("button", { name: "الأحداث", exact: true }).click();
   await page.getByRole("button", { name: "حدث جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("وصول الرسالة");
   await page
@@ -123,6 +116,7 @@ test("Arabic author journey, revisions, offline recovery and responsive screens"
     .getByRole("button", { name: "أطلس الغياب", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(editor).toBeVisible();
   await page.screenshot({
     path: "docs/screenshots/editor-ipad.png",

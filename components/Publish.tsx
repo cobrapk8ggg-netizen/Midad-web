@@ -56,7 +56,7 @@ export default function Publish({
   }, [bookId, draftId]);
   async function exportFile() {
     setBusy(true);
-    setStatus("جارٍ إعداد المخطوطة…");
+    setStatus("جارٍ إعداد الرواية…");
     try {
       const { exportBook } = await import("../lib/export");
       const annotations = (
@@ -121,25 +121,27 @@ export default function Publish({
       </div>
       <div className="publish-grid">
         <section className="publish-panel">
-          <h2>تصدير المخطوطة</h2>
+          <h2>تصدير الرواية</h2>
+          {books.length > 1 && (
+            <label className="field">
+              جزء الرواية
+              <select
+                value={bookId}
+                onChange={(e) => {
+                  setBookId(e.target.value);
+                  setDraftId(null);
+                }}
+              >
+                {books.map((b) => (
+                  <option value={b.id} key={b.id}>
+                    {b.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="field">
-            الكتاب
-            <select
-              value={bookId}
-              onChange={(e) => {
-                setBookId(e.target.value);
-                setDraftId(null);
-              }}
-            >
-              {books.map((b) => (
-                <option value={b.id} key={b.id}>
-                  {b.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            المسودة
+            النسخة
             <select
               aria-label="مسودة التصدير"
               value={draftId || ""}
@@ -186,15 +188,15 @@ export default function Publish({
             onClick={() => void exportFile()}
           >
             <Download size={17} />
-            تنزيل المخطوطة
+            تنزيل الرواية
           </button>
           <p role="status">{status}</p>
         </section>
         <section className="publish-panel">
           <h2>استيراد نص</h2>
           <p className="muted">
-            TXT أو Markdown أو DOCX. راجع النص قبل إضافته كمشهد جديد؛ لن تُستبدل
-            مشاهدك الحالية.
+            TXT أو Markdown أو DOCX. راجع النص قبل إضافته كفصل جديد كامل. لن
+            يُستبدل نص أي فصل موجود.
           </p>
           <input
             aria-label="ملف الاستيراد"
@@ -226,7 +228,7 @@ export default function Publish({
           {importText && (
             <>
               <label className="field">
-                عنوان المشهد
+                عنوان الفصل الجديد
                 <input
                   value={importTitle}
                   onChange={(e) => setImportTitle(e.target.value)}
@@ -241,28 +243,22 @@ export default function Publish({
                   onChange={(e) => setImportText(e.target.value)}
                 />
               </label>
-              <label className="field">
-                إضافة إلى الفصل
-                <select
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                >
-                  {chapters.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <button
                 className="primary full"
-                disabled={!target || busy || !importTitle.trim()}
+                disabled={!bookId || busy || !importTitle.trim()}
                 onClick={() =>
                   void (async () => {
                     setBusy(true);
                     try {
+                      const c = await insert<Chapter>("chapters", {
+                        book_id: bookId,
+                        draft_id: draftId,
+                        title: importTitle,
+                        position: chapters.length,
+                        writing_mode: "continuous",
+                      });
                       await insert("scenes", {
-                        chapter_id: target,
+                        chapter_id: c.id,
                         title: importTitle,
                         content: plainDocument(importText),
                         plain_text: importText,
@@ -270,7 +266,7 @@ export default function Publish({
                       });
                       setImportText("");
                       setStatus(
-                        "أُضيف النص كمشهد جديد. افتح الكتاب مجددًا لقراءته.",
+                        "أُضيف فصل جديد. افتح الرواية من المكتبة لرؤية الفصول المحدّثة.",
                       );
                     } catch (e) {
                       onError(errorMessage(e));

@@ -22,6 +22,7 @@ export async function cloneDraft(
           draft_id: draft.id,
           title: chapter.title,
           position: chapter.position,
+          writing_mode: chapter.writing_mode || "continuous",
         });
         for (const scene of await list<Scene>("scenes", {
           chapter_id: chapter.id,

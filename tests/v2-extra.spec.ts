@@ -18,30 +18,26 @@ test("independent drafts, private cover and editor preferences across browser co
   await page.getByRole("button", { name: "رواية جديدة", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("كتاب المرايا");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page
-    .getByRole("button", { name: "إنشاء كتاب", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("العنوان", { exact: true }).fill("مرايا");
-  await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page.getByRole("button", { name: "إنشاء فصل", exact: true }).click();
+
+  await page.getByRole("button", { name: "فصل جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("المشهد الأصلي");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  const editor = page.getByRole("textbox", { name: "نص المشهد" });
+  const editor = page.getByRole("textbox", { name: "نص الفصل" });
   await editor.fill("هذا النص الأصلي يجب أن يبقى دون أي تغيير.");
   await expect(
     page.getByRole("status").filter({ hasText: "محفوظ في حسابك" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "مسودة جديدة", exact: true }).click();
+  await page.locator(".advanced-drafts summary").click();
+  await page
+    .getByRole("button", { name: "نسخة بديلة جديدة", exact: true })
+    .click();
   await page.getByLabel("العنوان", { exact: true }).fill("المسودة البديلة");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
   await expect(
     page.getByRole("heading", { name: "مسودة جديدة", exact: true }),
   ).not.toBeVisible();
   await expect(
-    page
-      .getByLabel("المسودة الحالية", { exact: true })
-      .locator("option:checked"),
+    page.getByLabel("النسخة", { exact: true }).locator("option:checked"),
   ).toHaveText("المسودة البديلة");
   await expect(editor).toContainText("النص الأصلي");
   await editor.fill("هذا نص مختلف يخص المسودة البديلة وحدها.");
@@ -49,20 +45,20 @@ test("independent drafts, private cover and editor preferences across browser co
     page.getByRole("status").filter({ hasText: "محفوظ في حسابك" }),
   ).toBeVisible();
   await page
-    .getByLabel("المسودة الحالية", { exact: true })
-    .selectOption({ label: "المسودة الأصلية" });
+    .getByLabel("النسخة", { exact: true })
+    .selectOption({ label: "الفصول الأصلية" });
   await expect(editor).toContainText("هذا النص الأصلي");
   await expect(editor).not.toContainText("المسودة البديلة وحدها");
   await page
-    .getByLabel("المسودة الحالية", { exact: true })
+    .getByLabel("النسخة", { exact: true })
     .selectOption({ label: "المسودة البديلة" });
   await expect(editor).toContainText("المسودة البديلة وحدها");
   await page.screenshot({ path: "docs/screenshots/v2/drafts.png" });
-  await page.getByRole("button", { name: "حذف المسودة الحالية" }).click();
+  await page.getByRole("button", { name: "حذف النسخة البديلة" }).click();
   await page.getByRole("button", { name: "حذف نهائي", exact: true }).click();
   await expect(editor).toContainText("هذا النص الأصلي");
   await expect(
-    page.getByLabel("المسودة الحالية", { exact: true }).locator("option"),
+    page.getByLabel("النسخة", { exact: true }).locator("option"),
   ).toHaveCount(1);
   await page.getByLabel("تباعد السطور").focus();
   await page.getByLabel("تباعد السطور").press("End");
@@ -78,6 +74,7 @@ test("independent drafts, private cover and editor preferences across browser co
     .getByRole("button", { name: "كتاب المرايا", exact: true })
     .first()
     .click();
+  await p.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(p.getByLabel("تباعد السطور")).toHaveValue("3");
   await other.close();
   await page
@@ -114,6 +111,7 @@ test("independent drafts, private cover and editor preferences across browser co
     .getByRole("button", { name: "كتاب المرايا", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await page
     .getByRole("button", { name: "إعدادات الرواية", exact: true })
     .click();

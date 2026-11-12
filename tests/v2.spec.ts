@@ -32,16 +32,11 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
     .getByLabel("عن الحكاية (اختياري)")
     .fill("رحلة في المدن التي ابتلعها البحر.");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page
-    .getByRole("button", { name: "إنشاء كتاب", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("العنوان", { exact: true }).fill("دفتر المرافئ");
-  await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page.getByRole("button", { name: "إنشاء فصل", exact: true }).click();
+
+  await page.getByRole("button", { name: "فصل جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("البحر الخافت");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  const editor = page.getByRole("textbox", { name: "نص المشهد" });
+  const editor = page.getByRole("textbox", { name: "نص الفصل" });
   await editor.fill(
     "في الميناء القديم، كانت ليلى تسمع البحر الخافت. هذه حكاية عربية مع MIDAD 2026.\n".repeat(
       70,
@@ -55,6 +50,7 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
     .getByRole("button", { name: "ذاكرة الماء", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(editor).toContainText("البحر الخافت");
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: "docs/screenshots/v2/editor-desktop.png" });
@@ -92,7 +88,7 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
   await page.getByRole("button", { name: "حفظ إعدادات الرواية" }).click();
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: "docs/screenshots/v2/editor-annotations.png" });
-  await page.getByRole("button", { name: "العالم", exact: true }).click();
+  await page.getByRole("button", { name: "الشخصيات", exact: true }).click();
   for (const name of ["ليلى", "سليم"]) {
     await page.getByRole("button", { name: "شخصية جديدة" }).click();
     await page.getByLabel("الاسم", { exact: true }).fill(name);
@@ -121,13 +117,13 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
   await expect(page.locator(".relationship-list")).toContainText("حليفان");
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: "docs/screenshots/v2/relationships.png" });
-  await page.getByRole("button", { name: "التخطيط", exact: true }).click();
+  await page.getByRole("button", { name: "الأحداث", exact: true }).click();
+  await page.getByRole("button", { name: "خطوط الأحداث", exact: true }).click();
   await page
-    .getByRole("button", { name: "الأقواس السردية", exact: true })
+    .getByRole("button", { name: "خط أحداث جديد", exact: true })
     .click();
-  await page.getByRole("button", { name: "قوس جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("استعادة الذاكرة");
-  await page.getByLabel("الهدف السردي").fill("العثور على الميناء");
+  await page.getByLabel("ما الهدف من هذا الخط؟").fill("العثور على الميناء");
   await page.getByLabel("الصراع", { exact: true }).fill("كل خريطة تمحو ذكرى");
   await page.getByLabel("النتيجة", { exact: true }).fill("تختار المدينة");
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
@@ -141,24 +137,26 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
     .fill("رسالة تفتح باب الحكاية.");
   await page.getByLabel("التاريخ داخل الحكاية").fill("2040-03-21");
   await page
-    .getByLabel("القوس السردي", { exact: true })
+    .getByLabel("خط الأحداث (اختياري)", { exact: true })
     .selectOption({ label: "استعادة الذاكرة" });
   await page
-    .getByLabel("المشهد المرتبط", { exact: true })
+    .getByLabel("جزء الفصل المرتبط (اختياري)", { exact: true })
     .selectOption({ index: 1 });
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
-  await page.getByRole("button", { name: "لوحة الحبكة", exact: true }).click();
+  await page
+    .getByRole("button", { name: "ترتيب الأحداث", exact: true })
+    .click();
   await page.getByLabel("حالة تصل الخريطة").selectOption("draft");
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: "docs/screenshots/v2/plan.png" });
-  await page.getByRole("button", { name: "المشهد الأول", exact: true }).click();
+  await page.getByRole("button", { name: "البحر الخافت", exact: true }).click();
   await expect(editor).toContainText("البحر الخافت");
   await page.getByRole("button", { name: "لوحة الأوامر", exact: true }).click();
   await page.getByLabel("بحث الأوامر").fill("القديم");
   await expect(page.locator(".project-search button")).toHaveCount(1);
   await page.locator(".project-search button").click();
   await expect(editor).toContainText("القديم");
-  await page.getByRole("button", { name: "إدارة الكتب والفصول" }).click();
+  await page.getByRole("button", { name: "إدارة الفصول" }).click();
   await page.getByRole("button", { name: "تسمية الفصل البحر الخافت" }).click();
   await page.getByLabel("الاسم الجديد").fill("بوابة البحر");
   await page.getByRole("button", { name: "حفظ الاسم" }).click();
@@ -200,6 +198,7 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
     .getByRole("button", { name: "ذاكرة الماء", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(editor).toContainText("البحر الخافت");
   await page.getByRole("button", { name: "أنشئ حسابًا لحفظها سحابيًا" }).click();
   await page.getByRole("button", { name: "إنشاء حساب", exact: true }).click();
@@ -232,6 +231,7 @@ test("v2 guest workspace, real tools, backup, immediate signup and cloud transfe
     .getByRole("button", { name: "ذاكرة الماء", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(editor).toContainText("البحر الخافت");
   await expect(
     page.getByText("الميناء مدينة خيالية على حافة الذاكرة.", { exact: true }),
@@ -264,16 +264,11 @@ test("guest storage saves offline and refuses stale edits from a second tab", as
   await page.getByRole("button", { name: "رواية جديدة", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("تعارض محلي");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page
-    .getByRole("button", { name: "إنشاء كتاب", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("العنوان", { exact: true }).fill("كتاب");
-  await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  await page.getByRole("button", { name: "إنشاء فصل", exact: true }).click();
+
+  await page.getByRole("button", { name: "فصل جديد", exact: true }).click();
   await page.getByLabel("العنوان", { exact: true }).fill("فصل");
   await page.getByRole("button", { name: "حفظ ومتابعة" }).click();
-  const e1 = page.getByRole("textbox", { name: "نص المشهد" });
+  const e1 = page.getByRole("textbox", { name: "نص الفصل" });
   await expect(e1).toBeVisible();
   const second = await context.newPage();
   await second.goto("/");
@@ -281,7 +276,8 @@ test("guest storage saves offline and refuses stale edits from a second tab", as
     .getByRole("button", { name: "تعارض محلي", exact: true })
     .first()
     .click();
-  const e2 = second.getByRole("textbox", { name: "نص المشهد" });
+  await second.getByRole("button", { name: "الكتابة", exact: true }).click();
+  const e2 = second.getByRole("textbox", { name: "نص الفصل" });
   await expect(e2).toBeVisible();
   await context.setOffline(true);
   await e1.fill("أحدث نسخة محلية محفوظة دون اتصال");
@@ -304,6 +300,7 @@ test("guest storage saves offline and refuses stale edits from a second tab", as
     .getByRole("button", { name: "تعارض محلي", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "الكتابة", exact: true }).click();
   await expect(e1).toContainText("أحدث نسخة محلية محفوظة");
   await expect(e1).not.toContainText("تعديل متأخر");
 });
