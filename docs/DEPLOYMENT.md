@@ -20,3 +20,5 @@ MCP خاص: https://midad-chatgpt-writer.carefreepeach1.chatgpt.site/mcp . Sites
 التحقق النهائي المحلي للتصحيح: 10/10 Playwright، 5/5 Vitest، 40/40 API. نُشر ملف الكاتب العام والتصحيحات بعد هذه الفحوص. آخر SHA ورابط النشر يثبتان من بيانات Vercel والأدلة المرفقة عند الإصدار.
 
 الإصدار التصحيحي النهائي READY: `4f7674605fb60d44460b9e78a058c7afa711bcb4` / `dpl_F7AvpM4QsjRoJ7Q3jJ6rnG5FW2La`. رابط الإنتاج https://midad-writing.vercel.app . تحقق V3 على الإنتاج في v3-production-verification.json؛ التعديلات اللاحقة في Git توثيق ولقطات ومحدد اختبار فقط، دون تغيير كود التطبيق.
+
+آخر تصحيح للتطبيق بعد التقرير السابق: `3814627bd84d74fc854b261543888996b1f41d49` / `dpl_EBu6WSkU5ykoGsjzGbaRTqRXWriy` READY؛ يقتصر على أسماء أوامر المالك وإخفائها عن المشارك. تحقق موجّه على الإنتاج في v3-command-verification.json، و10/10 المسارات الكاملة موثقة على الإصدار السابق الذي بُني عليه التصحيح.

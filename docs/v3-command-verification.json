@@ -1,0 +1,9 @@
+{
+  "url": "https://midad-writing.vercel.app",
+  "deployment": "dpl_EBu6WSkU5ykoGsjzGbaRTqRXWriy",
+  "commit": "3814627bd84d74fc854b261543888996b1f41d49",
+  "ownerCommandsVisible": true,
+  "coauthorPrivateCommandsHidden": true,
+  "roleFixture": "isolated guest IndexedDB UI fixture; real server RLS separately verified",
+  "errors": []
+}
